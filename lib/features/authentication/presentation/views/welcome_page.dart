@@ -27,7 +27,7 @@ class WelcomePage extends StatelessWidget {
 
             children: [
               SizedBox(
-                height: 150,
+                height: 135,
                 width: double.infinity,
                 child: Image.asset(
                   'lib/core/assets/images/zenmind_logo.png',
