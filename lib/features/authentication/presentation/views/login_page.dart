@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zenmind/core/theme/app_colors.dart';
 
 import '../../../../home/home_screen.dart';
 import '../../data/services/google_auth_service.dart';
@@ -123,7 +125,14 @@ class _LoginPageState extends State<LoginPage> {
         final isLoading = widget.authViewModel.isLoading;
 
         return Scaffold(
-          appBar: AppBar(title: const Text('Iniciar sesión')),
+          appBar: AppBar(
+            title: Text(
+              'Volver',
+              style: GoogleFonts.livvic(color: AppColors.coffe),
+            ),
+            backgroundColor: AppColors.ivory,
+          ),
+          backgroundColor: AppColors.ivory,
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -134,20 +143,22 @@ class _LoginPageState extends State<LoginPage> {
                   children: [
                     const SizedBox(height: 32),
 
-                    const Text(
-                      'Bienvenido de nuevo',
+                    Text(
+                      'B I E N V E N I D O ',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.shortStack(
+                        fontSize: 22,
+                        letterSpacing: 2,
+                        color: AppColors.coffe,
                       ),
                     ),
 
                     const SizedBox(height: 8),
 
-                    const Text(
-                      'Inicia sesión para continuar en ZenMind.',
+                    Text(
+                      'Inicia sesión para continuar.',
                       textAlign: TextAlign.center,
+                      style: GoogleFonts.livvic(color: AppColors.coffe),
                     ),
 
                     const SizedBox(height: 40),
@@ -156,10 +167,12 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
+                        labelStyle: GoogleFonts.livvic(color: AppColors.coffe),
+                        hintStyle: GoogleFonts.livvic(color: AppColors.coffe),
                         labelText: 'Correo electrónico',
                         hintText: 'ejemplo@correo.com',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -180,6 +193,7 @@ class _LoginPageState extends State<LoginPage> {
                       controller: _passwordController,
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
+                        labelStyle: GoogleFonts.livvic(color: AppColors.coffe),
                         labelText: 'Contraseña',
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
@@ -207,6 +221,13 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 24),
 
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        textStyle: GoogleFonts.livvic(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        foregroundColor: AppColors.coffe,
+                        backgroundColor: AppColors.eucalyptus,
+                      ),
                       onPressed: isLoading ? null : _login,
                       child: isLoading
                           ? const SizedBox(
@@ -233,12 +254,21 @@ class _LoginPageState extends State<LoginPage> {
                     const SizedBox(height: 16),
 
                     OutlinedButton(
+                      style: TextButton.styleFrom(
+                        textStyle: GoogleFonts.livvic(
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.eucalyptus,
+                        ),
+                        foregroundColor: AppColors.eucalyptus,
+                        side: const BorderSide(
+                          color: AppColors.eucalyptus,
+                          width: 2,
+                        ),
+                      ),
                       onPressed: isLoading || _isGoogleLoading
                           ? null
                           : _loginWithGoogle,
-                      style: OutlinedButton.styleFrom(
-                        minimumSize: const Size.fromHeight(50),
-                      ),
+
                       child: _isGoogleLoading
                           ? const SizedBox(
                               height: 20,
@@ -249,15 +279,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
 
                     const SizedBox(height: 16),
-
-                    TextButton(
-                      onPressed: isLoading || _isGoogleLoading
-                          ? null
-                          : () {
-                              Navigator.pop(context);
-                            },
-                      child: const Text('Volver'),
-                    ),
                   ],
                 ),
               ),

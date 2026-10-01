@@ -6,4 +6,5 @@ class AppColors {
   static const Color ivory = Color(0xFFFFF9E2);
   static const Color pistachio = Color(0xFFEBECCC);
   static const Color clay = Color(0xFFDCA278);
+  static const Color coffe = Color(0xFF654228);
 }

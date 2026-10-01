@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/core/theme/app_text_styles.dart';
 import 'package:zenmind/features/authentication/presentation/views/login_page.dart';
 import 'package:zenmind/features/authentication/presentation/views/register_page.dart';
 
@@ -14,30 +17,51 @@ class WelcomePage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.ivory,
       body: SafeArea(
         child: Padding(
           padding: const EdgeInsets.all(24),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
+
             children: [
-              const Text(
-                'ZenMind',
-                textAlign: TextAlign.center,
-                style: TextStyle(fontSize: 32, fontWeight: FontWeight.bold),
+              SizedBox(
+                height: 150,
+                width: double.infinity,
+                child: Image.asset(
+                  'lib/core/assets/images/zenmind_logo.png',
+                  fit: BoxFit.cover,
+                  alignment: Alignment.topCenter,
+                ),
               ),
 
-              const SizedBox(height: 16),
+              Text(
+                'Z E N M I N D',
+                textAlign: TextAlign.center,
+                style: AppTextStyles.viewTitle,
+              ),
 
-              const Text(
+              SizedBox(height: 16),
+
+              Text(
                 'Tu espacio para cuidar tu bienestar.',
                 textAlign: TextAlign.center,
+                style: AppTextStyles.body,
               ),
 
-              const SizedBox(height: 48),
+              SizedBox(height: 100),
 
-              // Iniciar sesión
               ElevatedButton(
+                style: TextButton.styleFrom(
+                  textStyle: GoogleFonts.livvic(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.clay,
+                  ),
+                  foregroundColor: AppColors.coffe,
+                  backgroundColor: AppColors.clay,
+                ),
+
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -54,6 +78,14 @@ class WelcomePage extends StatelessWidget {
 
               // Crear cuenta
               OutlinedButton(
+                style: TextButton.styleFrom(
+                  textStyle: GoogleFonts.livvic(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.clay,
+                  ),
+                  foregroundColor: AppColors.clay,
+                  side: const BorderSide(color: AppColors.clay, width: 2),
+                ),
                 onPressed: () {
                   Navigator.push(
                     context,
@@ -70,6 +102,13 @@ class WelcomePage extends StatelessWidget {
 
               // Continuar como invitado
               TextButton(
+                style: TextButton.styleFrom(
+                  textStyle: GoogleFonts.livvic(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.clay,
+                  ),
+                  foregroundColor: AppColors.clay,
+                ),
                 onPressed: () async {
                   await authViewModel.continueAsGuest();
 

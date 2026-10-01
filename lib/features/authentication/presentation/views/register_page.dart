@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zenmind/core/theme/app_colors.dart';
 
 import '../../../../home/home_screen.dart';
 import '../viewmodels/auth_view_model.dart';
@@ -67,7 +69,14 @@ class _RegisterPageState extends State<RegisterPage> {
       listenable: widget.authViewModel,
       builder: (context, child) {
         return Scaffold(
-          appBar: AppBar(title: const Text('Crear cuenta')),
+          backgroundColor: AppColors.ivory,
+          appBar: AppBar(
+            title: Text(
+              'Volver',
+              style: GoogleFonts.livvic(color: AppColors.coffe),
+            ),
+            backgroundColor: AppColors.ivory,
+          ),
           body: SafeArea(
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
@@ -78,20 +87,22 @@ class _RegisterPageState extends State<RegisterPage> {
                   children: [
                     const SizedBox(height: 32),
 
-                    const Text(
-                      'Crea tu cuenta',
+                    Text(
+                      'C R E A R  C U E N T A',
                       textAlign: TextAlign.center,
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
+                      style: GoogleFonts.shortStack(
+                        fontSize: 22,
+                        letterSpacing: 2,
+                        color: AppColors.coffe,
                       ),
                     ),
 
                     const SizedBox(height: 8),
 
-                    const Text(
+                    Text(
                       'Comienza tu experiencia en ZenMind.',
                       textAlign: TextAlign.center,
+                      style: GoogleFonts.livvic(color: AppColors.coffe),
                     ),
 
                     const SizedBox(height: 40),
@@ -99,10 +110,12 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _nameController,
                       textCapitalization: TextCapitalization.words,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Nombre',
+                        labelStyle: GoogleFonts.livvic(color: AppColors.coffe),
                         hintText: 'Tu nombre',
-                        border: OutlineInputBorder(),
+                        hintStyle: GoogleFonts.livvic(color: AppColors.coffe),
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -123,10 +136,12 @@ class _RegisterPageState extends State<RegisterPage> {
                       controller: _emailController,
                       keyboardType: TextInputType.emailAddress,
                       autocorrect: false,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
+                        labelStyle: GoogleFonts.livvic(color: AppColors.coffe),
+                        hintStyle: GoogleFonts.livvic(color: AppColors.coffe),
                         labelText: 'Correo electrónico',
                         hintText: 'ejemplo@correo.com',
-                        border: OutlineInputBorder(),
+                        border: const OutlineInputBorder(),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -148,6 +163,8 @@ class _RegisterPageState extends State<RegisterPage> {
                       obscureText: _obscurePassword,
                       decoration: InputDecoration(
                         labelText: 'Contraseña',
+                        labelStyle: GoogleFonts.livvic(color: AppColors.coffe),
+                        hintStyle: GoogleFonts.livvic(color: AppColors.coffe),
                         border: const OutlineInputBorder(),
                         suffixIcon: IconButton(
                           onPressed: () {
@@ -178,6 +195,14 @@ class _RegisterPageState extends State<RegisterPage> {
                     const SizedBox(height: 24),
 
                     ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        textStyle: GoogleFonts.livvic(
+                          fontWeight: FontWeight.bold,
+                        ),
+                        foregroundColor: AppColors.coffe,
+                        backgroundColor: AppColors.eucalyptus,
+                      ),
+
                       onPressed: widget.authViewModel.isLoading
                           ? null
                           : _register,
@@ -187,17 +212,13 @@ class _RegisterPageState extends State<RegisterPage> {
                               width: 20,
                               child: CircularProgressIndicator(strokeWidth: 2),
                             )
-                          : const Text('Crear cuenta'),
+                          : Text(
+                              'Crear cuenta',
+                              style: GoogleFonts.livvic(color: AppColors.coffe),
+                            ),
                     ),
 
                     const SizedBox(height: 16),
-
-                    TextButton(
-                      onPressed: () {
-                        Navigator.pop(context);
-                      },
-                      child: const Text('Volver'),
-                    ),
                   ],
                 ),
               ),
