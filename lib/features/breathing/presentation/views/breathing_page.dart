@@ -153,13 +153,14 @@ class _BreathingPageState extends State<BreathingPage> {
                             'R E S P I R A C I Ó N  G U I A D A',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.shortStack(
-                              fontSize: 25,
+                              fontSize: 18,
                               color: AppColors.coffe,
                             ),
                           ),
 
-                          const SizedBox(height: 12),
+                          const SizedBox(height: 15),
                            AnimatedSwitcher(
+                            
                             duration: const Duration(milliseconds: 300),
                             child: _showWarning
                                 ? _statusBox(
