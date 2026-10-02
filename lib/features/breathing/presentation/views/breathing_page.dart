@@ -136,7 +136,7 @@ class _BreathingPageState extends State<BreathingPage> {
           backgroundColor: AppColors.ivory,
           appBar: AppBar(
             backgroundColor: AppColors.ivory,
-            title: Text('Respiración', style: GoogleFonts.shortStack()),
+            title: Text('Volver', style: GoogleFonts.shortStack()),
           ),
           body: SafeArea(
             child: Padding(
@@ -150,16 +150,35 @@ class _BreathingPageState extends State<BreathingPage> {
                           const SizedBox(height: 12),
 
                           Text(
-                            'Ejercicio de respiración',
+                            'R E S P I R A C I Ó N  G U I A D A',
                             textAlign: TextAlign.center,
                             style: GoogleFonts.shortStack(
-                              fontSize: 28,
+                              fontSize: 25,
                               color: AppColors.coffe,
                             ),
                           ),
 
-                          const SizedBox(height: 8),
-
+                          const SizedBox(height: 12),
+                           AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _showWarning
+                                ? _statusBox(
+                                    key: const ValueKey('warning'),
+                                    color: Colors.orange,
+                                    message:
+                                        'Deja de moverte y encuentra un lugar '
+                                        'donde puedas parar a respirar',
+                                  )
+                                : (isStill && !isBreathing)
+                                    ? _statusBox(
+                                        key: const ValueKey('ready'),
+                                        color: Colors.green,
+                                        message: 'Ya estás listo para empezar',
+                                      )
+                                    : const SizedBox.shrink(
+                                        key: ValueKey('none'),
+                                      ),
+                          ),
                           const SizedBox(height: 24),
 
                           SizedBox(
@@ -226,26 +245,7 @@ class _BreathingPageState extends State<BreathingPage> {
                           const SizedBox(height: 16),
 
                          
-                          AnimatedSwitcher(
-                            duration: const Duration(milliseconds: 300),
-                            child: _showWarning
-                                ? _statusBox(
-                                    key: const ValueKey('warning'),
-                                    color: Colors.orange,
-                                    message:
-                                        'Deja de moverte y encuentra un lugar '
-                                        'donde puedas parar a respirar',
-                                  )
-                                : (isStill && !isBreathing)
-                                    ? _statusBox(
-                                        key: const ValueKey('ready'),
-                                        color: Colors.green,
-                                        message: 'Ya estás listo para empezar',
-                                      )
-                                    : const SizedBox.shrink(
-                                        key: ValueKey('none'),
-                                      ),
-                          ),
+                         
 
                           const SizedBox(height: 16),
                         ],
