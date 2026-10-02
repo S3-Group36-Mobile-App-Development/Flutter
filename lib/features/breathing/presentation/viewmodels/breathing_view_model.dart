@@ -72,7 +72,7 @@ class BreathingViewModel extends ChangeNotifier {
     final movementDifference =
         (value - 9.8).abs();
 
-    if (movementDifference > 2.0) {
+    if (movementDifference > 0.5) {
       _context = MovementContext.moving;
     } else {
       _context = MovementContext.still;

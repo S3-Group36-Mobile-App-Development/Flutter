@@ -116,10 +116,10 @@ class _BreathingPageState extends State<BreathingPage> {
 
                   const SizedBox(height: 24),
 
-                  BreathingCircle(
+                  SizedBox(height: 220, width: 220, child: Center(child: BreathingCircle(
                     phase: _viewModel.phase,
                     isBreathing: isBreathing,
-                  ),
+                  )),),
 
                   const SizedBox(height: 24),
 
