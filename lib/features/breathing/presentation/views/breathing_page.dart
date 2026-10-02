@@ -136,7 +136,7 @@ class _BreathingPageState extends State<BreathingPage> {
           backgroundColor: AppColors.ivory,
           appBar: AppBar(
             backgroundColor: AppColors.ivory,
-            title: Text('Volver', style: GoogleFonts.shortStack(fontSize: 15)),
+            title: Text('Volver', style: GoogleFonts.shortStack(fontSize: 18)),
             foregroundColor:AppColors.coffe ,
           ),
           body: SafeArea(
@@ -279,10 +279,10 @@ class _BreathingPageState extends State<BreathingPage> {
                             onPressed:
                                 isStill ? _viewModel.startBreathing : null,
                             style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.eucalyptus,
+                              backgroundColor: AppColors.clay,
                               foregroundColor: AppColors.coffe,
                               disabledBackgroundColor:
-                                  AppColors.eucalyptus.withValues(alpha: 0.5),
+                                  AppColors.clay.withValues(alpha: 0.5),
                               disabledForegroundColor:
                                   AppColors.coffe.withValues(alpha: 0.5),
                               shape: RoundedRectangleBorder(
