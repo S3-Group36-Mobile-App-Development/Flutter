@@ -158,8 +158,12 @@ class _BreathingPageState extends State<BreathingPage> {
                               color: AppColors.coffe,
                             ),
                           ),
+                          Text("Encuentra tu ritmo y equilibra tu sistema",style: GoogleFonts.livvic(
+                              fontSize: 15,
+                              color: AppColors.coffe,
+                            ),),
 
-                          const SizedBox(height: 15),
+                          const SizedBox(height: 40),
                            AnimatedSwitcher(
                             
                             duration: const Duration(milliseconds: 300),
