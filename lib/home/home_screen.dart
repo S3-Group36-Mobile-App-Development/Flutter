@@ -46,6 +46,7 @@ class _HomePageState extends State<HomePage> {
             onPressed: _logout,
             color: AppColors.clay,
           ),
+          ElevatedButton(onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => BreathingPage()));}, child: Text("respira"))
         ],
       ),
 
