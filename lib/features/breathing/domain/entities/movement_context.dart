@@ -1,0 +1,4 @@
+enum MovementContext {
+    still,
+    moving
+}

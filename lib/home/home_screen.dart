@@ -1,4 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:zenmind/core/theme/app_colors.dart';
+
+import 'package:zenmind/home/widgets/home_buttons.dart';
 
 import '../features/authentication/presentation/viewmodels/auth_view_model.dart';
 import '../features/authentication/presentation/views/welcome_page.dart';
@@ -13,45 +17,78 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  int _currentIndex = 0;
-
-  final List<String> _titles = ['Inicio', 'Bienestar', 'Perfil'];
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: AppColors.ivory,
       appBar: AppBar(
-        title: Text(_titles[_currentIndex]),
+        toolbarHeight: 120,
+        centerTitle: true,
+        backgroundColor: AppColors.ivory,
+        leading: const SizedBox(width: 48),
+        title: Center(
+          child: ClipRect(
+            child: Align(
+              alignment: Alignment.center,
+              heightFactor: 0.6,
+              child: Image.asset(
+                'lib/core/assets/images/zenmind_logo.png',
+                height: 150,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
+        ),
         actions: [
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Cerrar sesión',
             onPressed: _logout,
+            color: AppColors.clay,
           ),
+         
         ],
       ),
 
-      body: Center(
-        child: Text(
-          _titles[_currentIndex],
-          style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
-      ),
-
-      bottomNavigationBar: BottomNavigationBar(
-        currentIndex: _currentIndex,
-        onTap: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-        },
-        items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Inicio'),
-          BottomNavigationBarItem(
-            icon: Icon(Icons.favorite),
-            label: 'Bienestar',
+      body: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              SizedBox(
+                child: ElevatedButton(
+                  onPressed: () {},
+                  style: ElevatedButton.styleFrom(
+                    fixedSize: const Size(380, 120),
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 24,
+                      vertical: 16,
+                    ),
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
+                    ),
+                    backgroundColor: AppColors.leucal,
+                  ),
+                  child: Column(
+                    children: [
+                      FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(
+                          '',
+                          style: GoogleFonts.shortStack(
+                            fontSize: 18,
+                            letterSpacing: 2,
+                            color: AppColors.coffe,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ),
+            ],
           ),
-          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Perfil'),
+          HomeButtons(),
         ],
       ),
     );
