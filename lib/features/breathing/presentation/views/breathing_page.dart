@@ -123,7 +123,7 @@ class _BreathingPageState extends State<BreathingPage> {
 
                   const SizedBox(height: 24),
 
-                  // Fase actual + segundos
+                 
                   if (isBreathing) ...[
                     Text(
                       _viewModel.phase,
@@ -151,15 +151,7 @@ class _BreathingPageState extends State<BreathingPage> {
                         color: AppColors.coffe,
                       ),
                     ),
-                  ] else
-                    Text(
-                      'Movimiento: ${_viewModel.movement.toStringAsFixed(2)}',
-                      style: GoogleFonts.livvic(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.coffe,
-                      ),
-                    ),
+                  ],
 
                   const SizedBox(height: 20),
 
@@ -193,8 +185,8 @@ class _BreathingPageState extends State<BreathingPage> {
                     ),
                     child: Text(
                       isStill
-                          ? 'Contexto: usuario estable'
-                          : 'Contexto: movimiento detectado',
+                          ? 'Ya estas listo para empezar'
+                          : 'Deja de moverte y encuentra un lugar que puedas parar a respirar',
                       textAlign: TextAlign.center,
                       style: GoogleFonts.livvic(color: AppColors.coffe),
                     ),

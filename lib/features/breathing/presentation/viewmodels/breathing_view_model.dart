@@ -26,10 +26,9 @@ class BreathingViewModel extends ChangeNotifier {
   String _phase = 'Listo para comenzar';
 
   BreathingViewModel({
-    required SensorService sensorService,
-    required VibrationService vibrationService,
-  })  : _sensorService = sensorService,
-        _vibrationService = vibrationService;
+    required this._sensorService,
+    required this._vibrationService,
+  });
 
   MovementContext get context => _context;
 
