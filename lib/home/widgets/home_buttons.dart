@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/features/breathing/presentation/views/breathing_page.dart';
 
 class HomeButtons extends StatelessWidget {
   const new({super.key});
@@ -138,7 +139,7 @@ class HomeButtons extends StatelessWidget {
               children: [
                 SizedBox(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () {Navigator.push(context, MaterialPageRoute(builder: (context) => BreathingPage()));},
                     style: ElevatedButton.styleFrom(
                       fixedSize: const Size(170, 170),
                       padding: const EdgeInsets.symmetric(
