@@ -160,12 +160,6 @@ class _BreathingPageState extends State<BreathingPage> {
 
                           const SizedBox(height: 8),
 
-                          Text(
-                            _viewModel.contextMessage,
-                            textAlign: TextAlign.center,
-                            style: GoogleFonts.livvic(color: AppColors.coffe),
-                          ),
-
                           const SizedBox(height: 24),
 
                           SizedBox(
