@@ -10,14 +10,14 @@ class BreathingCircle extends StatelessWidget {
     required this.isBreathing,
   });
 
-  // Ajusta los nombres de las fases y las rutas a las tuyas
+  
   static const Map<String, String> _images = {
     'Inhala': 'lib/core/assets/images/INHALE.png',
     'Sostén': 'lib/core/assets/images/HOLD.png',
     'Exhala': 'lib/core/assets/images/EXHALE.png',
   };
 
-  static const String _idleImage = 'lib/core/assets/images/inhalar.png';
+  static const String _idleImage = 'lib/core/assets/images/INHALE.png';
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@ class BreathingCircle extends StatelessWidget {
         duration: const Duration(milliseconds: 500),
         child: Image.asset(
           imagePath,
-          key: ValueKey(imagePath), // necesario para que detecte el cambio
+          key: ValueKey(imagePath), 
           fit: BoxFit.contain,
         ),
       ),
