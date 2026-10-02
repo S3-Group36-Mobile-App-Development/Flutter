@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
@@ -18,7 +20,9 @@ class BreathingPage extends StatefulWidget {
 class _BreathingPageState extends State<BreathingPage> {
   late final BreathingViewModel _viewModel;
 
-  
+  bool _showWarning = false;
+  Timer? _warningTimer;
+
   static const _phases = ['Inhala', 'Sostén', 'Exhala'];
 
   static const _phaseHints = {
@@ -34,11 +38,29 @@ class _BreathingPageState extends State<BreathingPage> {
       sensorService: SensorService(),
       vibrationService: VibrationService(),
     );
+    _viewModel.addListener(_checkMovement);
     _viewModel.startSensor();
+  }
+
+  void _checkMovement() {
+    final isStill = _viewModel.context == MovementContext.still;
+
+   
+    if (!isStill && !_showWarning && _warningTimer == null) {
+      if (!mounted) return;
+      setState(() => _showWarning = true);
+      _warningTimer = Timer(const Duration(seconds: 3), () {
+        _warningTimer = null;
+        if (!mounted) return;
+        setState(() => _showWarning = false);
+      });
+    }
   }
 
   @override
   void dispose() {
+    _warningTimer?.cancel();
+    _viewModel.removeListener(_checkMovement);
     _viewModel.dispose();
     super.dispose();
   }
@@ -53,7 +75,9 @@ class _BreathingPageState extends State<BreathingPage> {
         color: isActive ? AppColors.eucalyptus : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
-          color: isActive ? AppColors.eucalyptus : AppColors.coffe.withValues(alpha: 0.3),
+          color: isActive
+              ? AppColors.eucalyptus
+              : AppColors.coffe.withValues(alpha: 0.3),
         ),
       ),
       child: Column(
@@ -69,9 +93,33 @@ class _BreathingPageState extends State<BreathingPage> {
           if (isActive)
             Text(
               '${_viewModel.secondsRemaining}s',
-              style: GoogleFonts.shortStack(fontSize: 16, color: AppColors.coffe),
+              style: GoogleFonts.shortStack(
+                fontSize: 16,
+                color: AppColors.coffe,
+              ),
             ),
         ],
+      ),
+    );
+  }
+
+  Widget _statusBox({
+    required Key key,
+    required Color color,
+    required String message,
+  }) {
+    return Container(
+      key: key,
+      width: double.infinity,
+      padding: const EdgeInsets.all(14),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: color),
+      ),
+      child: Text(
+        message,
+        textAlign: TextAlign.center,
+        style: GoogleFonts.livvic(color: AppColors.coffe),
       ),
     );
   }
@@ -95,104 +143,123 @@ class _BreathingPageState extends State<BreathingPage> {
               padding: const EdgeInsets.all(24),
               child: Column(
                 children: [
+                  Expanded(
+                    child: SingleChildScrollView(
+                      child: Column(
+                        children: [
+                          const SizedBox(height: 12),
+
+                          Text(
+                            'Ejercicio de respiración',
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.shortStack(
+                              fontSize: 28,
+                              color: AppColors.coffe,
+                            ),
+                          ),
+
+                          const SizedBox(height: 8),
+
+                          Text(
+                            _viewModel.contextMessage,
+                            textAlign: TextAlign.center,
+                            style: GoogleFonts.livvic(color: AppColors.coffe),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          SizedBox(
+                            height: 220,
+                            width: 220,
+                            child: Center(
+                              child: BreathingCircle(
+                                phase: _viewModel.phase,
+                                isBreathing: isBreathing,
+                              ),
+                            ),
+                          ),
+
+                          const SizedBox(height: 24),
+
+                          if (isBreathing) ...[
+                            Text(
+                              _viewModel.phase,
+                              style: GoogleFonts.shortStack(
+                                fontSize: 32,
+                                letterSpacing: 2,
+                                color: AppColors.coffe,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '${_viewModel.secondsRemaining} s',
+                              style: GoogleFonts.livvic(
+                                fontSize: 40,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.coffe,
+                              ),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              _phaseHints[_viewModel.phase] ?? '',
+                              textAlign: TextAlign.center,
+                              style: GoogleFonts.livvic(
+                                fontSize: 14,
+                                color: AppColors.coffe,
+                              ),
+                            ),
+                          ],
+
+                          const SizedBox(height: 20),
+
+                          Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            children: _phases.map(_phaseChip).toList(),
+                          ),
+
+                          const SizedBox(height: 16),
+
+                          if (isBreathing)
+                            Text(
+                              'Ciclo ${_viewModel.currentCycle} '
+                              'de ${_viewModel.totalCycles}',
+                              style: GoogleFonts.livvic(
+                                fontSize: 16,
+                                color: AppColors.coffe,
+                              ),
+                            ),
+
+                          const SizedBox(height: 16),
+
+                         
+                          AnimatedSwitcher(
+                            duration: const Duration(milliseconds: 300),
+                            child: _showWarning
+                                ? _statusBox(
+                                    key: const ValueKey('warning'),
+                                    color: Colors.orange,
+                                    message:
+                                        'Deja de moverte y encuentra un lugar '
+                                        'donde puedas parar a respirar',
+                                  )
+                                : (isStill && !isBreathing)
+                                    ? _statusBox(
+                                        key: const ValueKey('ready'),
+                                        color: Colors.green,
+                                        message: 'Ya estás listo para empezar',
+                                      )
+                                    : const SizedBox.shrink(
+                                        key: ValueKey('none'),
+                                      ),
+                          ),
+
+                          const SizedBox(height: 16),
+                        ],
+                      ),
+                    ),
+                  ),
+
                   const SizedBox(height: 12),
-
-                  Text(
-                    'Ejercicio de respiración',
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.shortStack(
-                      fontSize: 28,
-                      color: AppColors.coffe,
-                    ),
-                  ),
-
-                  const SizedBox(height: 8),
-
-                  Text(
-                    _viewModel.contextMessage,
-                    textAlign: TextAlign.center,
-                    style: GoogleFonts.livvic(color: AppColors.coffe),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  SizedBox(height: 220, width: 220, child: Center(child: BreathingCircle(
-                    phase: _viewModel.phase,
-                    isBreathing: isBreathing,
-                  )),),
-
-                  const SizedBox(height: 24),
-
-                 
-                  if (isBreathing) ...[
-                    Text(
-                      _viewModel.phase,
-                      style: GoogleFonts.shortStack(
-                        fontSize: 32,
-                        letterSpacing: 2,
-                        color: AppColors.coffe,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      '${_viewModel.secondsRemaining} s',
-                      style: GoogleFonts.livvic(
-                        fontSize: 40,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.coffe,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    Text(
-                      _phaseHints[_viewModel.phase] ?? '',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(
-                        fontSize: 14,
-                        color: AppColors.coffe,
-                      ),
-                    ),
-                  ],
-
-                  const SizedBox(height: 20),
-
-                  
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                    children: _phases.map(_phaseChip).toList(),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  if (isBreathing)
-                    Text(
-                      'Ciclo ${_viewModel.currentCycle} de ${_viewModel.totalCycles}',
-                      style: GoogleFonts.livvic(
-                        fontSize: 16,
-                        color: AppColors.coffe,
-                      ),
-                    ),
-
-                  const SizedBox(height: 16),
-
-                  Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(
-                        color: isStill ? Colors.green : Colors.orange,
-                      ),
-                    ),
-                    child: Text(
-                      isStill
-                          ? 'Ya estas listo para empezar'
-                          : 'Deja de moverte y encuentra un lugar que puedas parar a respirar',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(color: AppColors.coffe),
-                    ),
-                  ),
-
-                  const Spacer(),
 
                   SizedBox(
                     width: double.infinity,
@@ -202,7 +269,7 @@ class _BreathingPageState extends State<BreathingPage> {
                             onPressed: _viewModel.stop,
                             style: OutlinedButton.styleFrom(
                               foregroundColor: AppColors.coffe,
-                              side: const BorderSide(color: AppColors.coffe),
+                              side: BorderSide(color: AppColors.coffe),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
@@ -213,10 +280,15 @@ class _BreathingPageState extends State<BreathingPage> {
                             ),
                           )
                         : ElevatedButton(
-                            onPressed: _viewModel.startBreathing,
+                            onPressed:
+                                isStill ? _viewModel.startBreathing : null,
                             style: ElevatedButton.styleFrom(
                               backgroundColor: AppColors.eucalyptus,
                               foregroundColor: AppColors.coffe,
+                              disabledBackgroundColor:
+                                  AppColors.eucalyptus.withValues(alpha: 0.5),
+                              disabledForegroundColor:
+                                  AppColors.coffe.withValues(alpha: 0.5),
                               shape: RoundedRectangleBorder(
                                 borderRadius: BorderRadius.circular(12),
                               ),
