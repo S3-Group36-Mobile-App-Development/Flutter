@@ -10,37 +10,33 @@ class BreathingCircle extends StatelessWidget {
     required this.isBreathing,
   });
 
+  // Ajusta los nombres de las fases y las rutas a las tuyas
+  static const Map<String, String> _images = {
+    'Inhala': 'lib/core/assets/images/INHALE.png',
+    'Sostén': 'lib/core/assets/images/HOLD.png',
+    'Exhala': 'lib/core/assets/images/EXHALE.png',
+  };
+
+  static const String _idleImage = 'lib/core/assets/images/inhalar.png';
+
   @override
   Widget build(BuildContext context) {
-    final shouldExpand = phase == 'Inhala';
-
+    final shouldExpand = phase == 'Inhala' || phase == 'Sostén';
     final size = shouldExpand ? 220.0 : 150.0;
 
+    final imagePath = isBreathing ? (_images[phase] ?? _idleImage) : _idleImage;
+
     return AnimatedContainer(
-      duration: Duration(
-        seconds: phase == 'Exhala' ? 3 : 2,
-      ),
+      duration: Duration(seconds: phase == 'Exhala' ? 3 : 2),
       curve: Curves.easeInOut,
       width: size,
       height: size,
-      decoration: BoxDecoration(
-        shape: BoxShape.circle,
-        color: Colors.blue.withValues(
-          alpha: 0.2,
-        ),
-        border: Border.all(
-          color: Colors.blue,
-          width: 3,
-        ),
-      ),
-      child: Center(
-        child: Text(
-          isBreathing ? phase : 'Respira',
-          textAlign: TextAlign.center,
-          style: const TextStyle(
-            fontSize: 24,
-            fontWeight: FontWeight.bold,
-          ),
+      child: AnimatedSwitcher(
+        duration: const Duration(milliseconds: 500),
+        child: Image.asset(
+          imagePath,
+          key: ValueKey(imagePath), // necesario para que detecte el cambio
+          fit: BoxFit.contain,
         ),
       ),
     );
