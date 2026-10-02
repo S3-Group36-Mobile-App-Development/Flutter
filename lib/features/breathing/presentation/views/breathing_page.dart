@@ -72,11 +72,11 @@ class _BreathingPageState extends State<BreathingPage> {
       duration: const Duration(milliseconds: 300),
       padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
       decoration: BoxDecoration(
-        color: isActive ? AppColors.eucalyptus : Colors.transparent,
+        color: isActive ? AppColors.clay : Colors.transparent,
         borderRadius: BorderRadius.circular(12),
         border: Border.all(
           color: isActive
-              ? AppColors.eucalyptus
+              ? AppColors.clay
               : AppColors.coffe.withValues(alpha: 0.3),
         ),
       ),
@@ -203,6 +203,7 @@ class _BreathingPageState extends State<BreathingPage> {
                                 fontSize: 32,
                                 letterSpacing: 2,
                                 color: AppColors.coffe,
+                    
                               ),
                             ),
                             const SizedBox(height: 4),
