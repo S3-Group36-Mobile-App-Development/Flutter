@@ -136,7 +136,8 @@ class _BreathingPageState extends State<BreathingPage> {
           backgroundColor: AppColors.ivory,
           appBar: AppBar(
             backgroundColor: AppColors.ivory,
-            title: Text('Volver', style: GoogleFonts.shortStack()),
+            title: Text('Volver', style: GoogleFonts.shortStack(fontSize: 15)),
+            foregroundColor:AppColors.coffe ,
           ),
           body: SafeArea(
             child: Padding(
