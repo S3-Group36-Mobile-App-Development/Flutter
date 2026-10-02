@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:zenmind/features/breathing/presentation/views/breathing_page.dart';
 
 import '../features/authentication/presentation/viewmodels/auth_view_model.dart';
 import '../features/authentication/presentation/views/welcome_page.dart';
@@ -28,14 +29,16 @@ class _HomePageState extends State<HomePage> {
             tooltip: 'Cerrar sesión',
             onPressed: _logout,
           ),
+          ElevatedButton(onPressed: (){ Navigator.push(context, MaterialPageRoute(builder: (context) => BreathingPage()));}, child: Text("respira"))
         ],
       ),
 
       body: Center(
-        child: Text(
+        child: (Text(
           _titles[_currentIndex],
           style: const TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-        ),
+        
+        )),
       ),
 
       bottomNavigationBar: BottomNavigationBar(
