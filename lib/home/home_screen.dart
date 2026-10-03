@@ -48,20 +48,22 @@ class _HomePageState extends State<HomePage> {
             onPressed: _logout,
             color: AppColors.clay,
           ),
-         
         ],
       ),
 
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
+      // Scroll para que no se desborde en pantallas bajitas.
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            // Botón del check-in: ocupa todo el ancho menos 16 a cada lado.
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 120,
                 child: ElevatedButton(
                   onPressed: _openDailyReview,
                   style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(380, 120),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 16,
@@ -98,10 +100,11 @@ class _HomePageState extends State<HomePage> {
                   ),
                 ),
               ),
-            ],
-          ),
-          HomeButtons(),
-        ],
+            ),
+            HomeButtons(),
+            const SizedBox(height: 24),
+          ],
+        ),
       ),
     );
   }
@@ -128,7 +131,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(authViewModel: widget.authViewModel),
       ),
-      (route) => false,
+          (route) => false,
     );
   }
 }
