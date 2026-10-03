@@ -51,11 +51,9 @@ class _HomePageState extends State<HomePage> {
         ],
       ),
 
-      // Scroll para que no se desborde en pantallas bajitas.
       body: SingleChildScrollView(
         child: Column(
           children: [
-            // Botón del check-in: ocupa todo el ancho menos 16 a cada lado.
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
