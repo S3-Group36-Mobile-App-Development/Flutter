@@ -5,7 +5,7 @@ class RecommendationCard {
   final String title;
   final String message;
   final List<String> steps;
-  final String actionLabel;
+  final String? actionLabel;
 
   const RecommendationCard({
     required this.type,
