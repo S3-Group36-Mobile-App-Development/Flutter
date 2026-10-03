@@ -11,6 +11,7 @@ class SaveResult {
 }
 
 abstract class DailyReviewRepository {
+  ///Null si no hace el check-in
   Future<Mood?> getTodayMood();
 
   Future<SaveResult> saveCheckin({
