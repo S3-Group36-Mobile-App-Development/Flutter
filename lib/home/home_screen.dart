@@ -6,6 +6,8 @@ import 'package:zenmind/home/widgets/home_buttons.dart';
 
 import '../features/authentication/presentation/viewmodels/auth_view_model.dart';
 import '../features/authentication/presentation/views/welcome_page.dart';
+import '../features/daily_review/daily_review_factory.dart';
+import '../features/daily_review/presentation/views/daily_review_page.dart';
 
 class HomePage extends StatefulWidget {
   final AuthViewModel authViewModel;
@@ -46,20 +48,20 @@ class _HomePageState extends State<HomePage> {
             onPressed: _logout,
             color: AppColors.clay,
           ),
-         
         ],
       ),
 
-      body: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              SizedBox(
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              child: SizedBox(
+                width: double.infinity,
+                height: 120,
                 child: ElevatedButton(
-                  onPressed: () {},
+                  onPressed: _openDailyReview,
                   style: ElevatedButton.styleFrom(
-                    fixedSize: const Size(380, 120),
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
                       vertical: 16,
@@ -70,11 +72,12 @@ class _HomePageState extends State<HomePage> {
                     backgroundColor: AppColors.leucal,
                   ),
                   child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       FittedBox(
                         fit: BoxFit.scaleDown,
                         child: Text(
-                          '',
+                          'C H E C K - I N',
                           style: GoogleFonts.shortStack(
                             fontSize: 18,
                             letterSpacing: 2,
@@ -82,14 +85,36 @@ class _HomePageState extends State<HomePage> {
                           ),
                         ),
                       ),
+                      const SizedBox(height: 6),
+                      Text(
+                        '¿Cómo te sientes hoy? Recibe tu card',
+                        textAlign: TextAlign.center,
+                        style: GoogleFonts.livvic(
+                          fontSize: 14,
+                          color: AppColors.coffe,
+                        ),
+                      ),
                     ],
                   ),
                 ),
               ),
-            ],
-          ),
-          HomeButtons(),
-        ],
+            ),
+            HomeButtons(),
+            const SizedBox(height: 24),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _openDailyReview() {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => DailyReviewPage(
+          repository: buildDailyReviewRepository(),
+          isGuest: widget.authViewModel.isGuest,
+        ),
       ),
     );
   }
@@ -104,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(authViewModel: widget.authViewModel),
       ),
-      (route) => false,
+          (route) => false,
     );
   }
 }
