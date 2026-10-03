@@ -7,7 +7,7 @@ class CardRecommender {
 
   RecommendationCard recommend(Mood mood) {
     switch (mood) {
-      case Mood.mal:
+      case Mood.triste:
         return const RecommendationCard(
           type: CardType.support,
           title: 'No tienes que pasarlo solo/a',
@@ -32,7 +32,7 @@ class CardRecommender {
           actionLabel: 'Ir a Respira',
         );
 
-      case Mood.neutral:
+      case Mood.estresado:
         return const RecommendationCard(
           type: CardType.advice,
           title: 'Pausa consciente',
@@ -44,7 +44,7 @@ class CardRecommender {
           ],
         );
 
-      case Mood.calmado:
+      case Mood.tranquilo:
         return const RecommendationCard(
           type: CardType.game,
           title: 'Mantén esa calma',
@@ -55,7 +55,7 @@ class CardRecommender {
           ],
         );
 
-      case Mood.muyBien:
+      case Mood.feliz:
         return const RecommendationCard(
           type: CardType.protocol,
           title: '¡Qué bien! Aprende a ayudar a otros',

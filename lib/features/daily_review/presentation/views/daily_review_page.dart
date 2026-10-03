@@ -8,6 +8,7 @@ import '../../domain/repositories/daily_review_repository.dart';
 import '../viewmodels/daily_review_view_model.dart';
 import '../widgets/mood_chip.dart';
 import '../widgets/recommendation_card_view.dart';
+import '../widgets/streak_chips.dart';
 
 class DailyReviewPage extends StatefulWidget {
   final DailyReviewRepository repository;
@@ -134,6 +135,8 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
                     color: AppColors.coffe.withValues(alpha: 0.7),
                   ),
                 ),
+                const SizedBox(height: 20),
+                StreakChips(streak: _viewModel.streak),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -239,6 +242,8 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
               ),
             ),
           ],
+          const SizedBox(height: 20),
+          StreakChips(streak: _viewModel.streak),
           const SizedBox(height: 24),
           RecommendationCardView(
             card: card,

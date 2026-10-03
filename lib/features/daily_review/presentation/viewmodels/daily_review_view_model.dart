@@ -2,6 +2,7 @@ import 'package:flutter/foundation.dart';
 
 import '../../domain/entities/mood.dart';
 import '../../domain/entities/recommendation_card.dart';
+import '../../domain/entities/streak.dart';
 import '../../domain/repositories/daily_review_repository.dart';
 import '../../domain/services/card_recommender.dart';
 
@@ -19,11 +20,14 @@ class DailyReviewViewModel extends ChangeNotifier {
   String _note = '';
   RecommendationCard? _card;
   String? _message;
+  Streak _streak = Streak.empty;
+  bool _disposed = false;
 
   CheckinStatus get status => _status;
   Mood? get selectedMood => _selectedMood;
   RecommendationCard? get card => _card;
   String? get message => _message;
+  Streak get streak => _streak;
 
   bool get canSave => _selectedMood != null && _status == CheckinStatus.form;
 
@@ -38,6 +42,17 @@ class DailyReviewViewModel extends ChangeNotifier {
       _status = CheckinStatus.form;
     }
 
+    notifyListeners();
+
+    await _loadStreak();
+  }
+
+  Future<void> _loadStreak() async {
+    final streak = await _repository.getStreak(isGuest: _isGuest);
+
+    if (_disposed) return;
+
+    _streak = streak;
     notifyListeners();
   }
 
@@ -73,6 +88,8 @@ class DailyReviewViewModel extends ChangeNotifier {
     _card = _recommender.recommend(_selectedMood!);
     _status = CheckinStatus.done;
     notifyListeners();
+
+    await _loadStreak();
   }
 
   String? _messageFor(SaveResult result) {
@@ -80,5 +97,11 @@ class DailyReviewViewModel extends ChangeNotifier {
     if (result.alreadyCheckedInToday) return 'Tu check-in de hoy ya estaba registrado.';
     if (!result.syncedWithServer) return 'No pudimos sincronizar, pero tu card está lista.';
     return null;
+  }
+
+  @override
+  void dispose() {
+    _disposed = true;
+    super.dispose();
   }
 }

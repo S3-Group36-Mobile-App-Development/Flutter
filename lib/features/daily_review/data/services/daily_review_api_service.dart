@@ -12,6 +12,14 @@ class DailyReviewApiService {
     return response.data!.cast<Map<String, dynamic>>();
   }
 
+  Future<Map<String, dynamic>?> getStreak() async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.profile,
+    );
+
+    return response.data!['racha'] as Map<String, dynamic>?;
+  }
+
   Future<void> createCheckin({required int moodId, String? comment}) async {
     final data = <String, dynamic>{'estadoAnimoId': moodId};
 

@@ -1,4 +1,5 @@
 import '../entities/mood.dart';
+import '../entities/streak.dart';
 
 class SaveResult {
   final bool syncedWithServer;
@@ -11,8 +12,9 @@ class SaveResult {
 }
 
 abstract class DailyReviewRepository {
-  ///Null si no hace el check-in
   Future<Mood?> getTodayMood();
+
+  Future<Streak> getStreak({required bool isGuest});
 
   Future<SaveResult> saveCheckin({
     required Mood mood,
