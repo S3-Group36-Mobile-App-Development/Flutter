@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+
+import '../../../core/theme/app_colors.dart';
 
 class GoogleSignInButton extends StatelessWidget {
   final VoidCallback? onPressed;
@@ -12,16 +15,32 @@ class GoogleSignInButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
+    return OutlinedButton.icon(
       onPressed: isLoading ? null : onPressed,
-      style: OutlinedButton.styleFrom(minimumSize: const Size.fromHeight(50)),
-      child: isLoading
+      style: OutlinedButton.styleFrom(
+        minimumSize: const Size.fromHeight(52),
+        foregroundColor: AppColors.coffe,
+        side: BorderSide(
+          color: AppColors.clay.withValues(alpha: 0.6),
+          width: 1.5,
+        ),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+        textStyle: GoogleFonts.livvic(
+          fontSize: 16,
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+      icon: isLoading
           ? const SizedBox(
               height: 20,
               width: 20,
-              child: CircularProgressIndicator(strokeWidth: 2),
+              child: CircularProgressIndicator(
+                strokeWidth: 2,
+                color: AppColors.coffe,
+              ),
             )
-          : const Text('Continuar con Google'),
+          : const Icon(Icons.g_mobiledata, size: 28),
+      label: Text(isLoading ? 'Conectando...' : 'Continuar con Google'),
     );
   }
 }

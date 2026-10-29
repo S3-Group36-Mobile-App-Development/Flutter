@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 
 import '../../../../core/auth/auth_state.dart';
+import '../../../../core/errors/auth_exception.dart';
 import '../../domain/entities/user.dart';
 import '../../domain/repositories/auth_repository.dart';
 
@@ -182,7 +183,7 @@ class AuthViewModel extends ChangeNotifier {
   }
 
   void _handleError(Object error) {
-    _errorMessage = error.toString();
+    _errorMessage = AuthException.from(error).message;
     _state = const AuthState.unauthenticated();
 
     notifyListeners();

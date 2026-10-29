@@ -1,3 +1,4 @@
+import '../../../../core/errors/auth_exception.dart';
 import '../../../../core/storage/local_storage_service.dart';
 import '../../../../core/storage/secure_storage_service.dart';
 import '../../domain/entities/user.dart';
@@ -17,19 +18,23 @@ class AuthRepositoryImpl implements AuthRepository {
 
   @override
   Future<User> login({required String email, required String password}) async {
-    final response = await _authApiService.login(
-      email: email,
-      password: password,
-    );
+    try {
+      final response = await _authApiService.login(
+        email: email,
+        password: password,
+      );
 
-    await _secureStorage.saveTokens(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-    );
+      await _secureStorage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
 
-    await _localStorage.clearGuestMode();
+      await _localStorage.clearGuestMode();
 
-    return response.usuario;
+      return response.usuario;
+    } catch (error) {
+      throw AuthException.from(error, context: 'login');
+    }
   }
 
   @override
@@ -38,34 +43,42 @@ class AuthRepositoryImpl implements AuthRepository {
     required String password,
     required String nombreVisible,
   }) async {
-    final response = await _authApiService.register(
-      email: email,
-      password: password,
-      nombreVisible: nombreVisible,
-    );
+    try {
+      final response = await _authApiService.register(
+        email: email,
+        password: password,
+        nombreVisible: nombreVisible,
+      );
 
-    await _secureStorage.saveTokens(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-    );
+      await _secureStorage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
 
-    await _localStorage.clearGuestMode();
+      await _localStorage.clearGuestMode();
 
-    return response.usuario;
+      return response.usuario;
+    } catch (error) {
+      throw AuthException.from(error, context: 'register');
+    }
   }
 
   @override
   Future<User> loginWithGoogle({required String idToken}) async {
-    final response = await _authApiService.loginWithGoogle(idToken: idToken);
+    try {
+      final response = await _authApiService.loginWithGoogle(idToken: idToken);
 
-    await _secureStorage.saveTokens(
-      accessToken: response.accessToken,
-      refreshToken: response.refreshToken,
-    );
+      await _secureStorage.saveTokens(
+        accessToken: response.accessToken,
+        refreshToken: response.refreshToken,
+      );
 
-    await _localStorage.clearGuestMode();
+      await _localStorage.clearGuestMode();
 
-    return response.usuario;
+      return response.usuario;
+    } catch (error) {
+      throw AuthException.from(error, context: 'google');
+    }
   }
 
   @override
