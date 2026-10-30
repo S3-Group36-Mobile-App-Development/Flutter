@@ -19,6 +19,6 @@ class EjercicioRespiracion {
     required this.usageCount, 
     required this.raitingAvg, 
     required this.ratingCoutn,
-  })
+  });
 
 }
