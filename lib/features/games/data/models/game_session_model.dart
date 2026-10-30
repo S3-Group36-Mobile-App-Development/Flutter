@@ -28,4 +28,14 @@ class GameSessionModel extends GameSession {
       'completedAt': completedAt,
     };
   }
+
+  factory GameSessionModel.fromEntity(GameSession session) {
+    return GameSessionModel(
+      id: session.id,
+      durationMs: session.durationMs,
+      errors: session.errors,
+      correctTaps: session.correctTaps,
+      completedAt: session.completedAt,
+    );
+  }
 }

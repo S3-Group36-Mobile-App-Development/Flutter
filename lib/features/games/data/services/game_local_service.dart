@@ -7,27 +7,80 @@ class GameLocalService {
   GameLocalService({required this._localdatabase});
 
   Future<void> saveSession(GameSessionModel session) async {
-    await _localdatabase.database.insert('game_sessions', session.toJson());
+    final sessionData = {...session.toJson(), 'syncStatus': 'pending'};
+
+    await _localdatabase.database.insert('game_sessions', sessionData);
   }
 
   Future<List<GameSessionModel>> getSessions() async {
-    final response = await _localdatabase.database.query('game_sessions');
+    final response = await _localdatabase.database.query(
+      'game_sessions',
+      orderBy: 'completedAt DESC',
+    );
+
     final List<GameSessionModel> sessions = [];
 
     for (final item in response) {
-      final json = item as Map<String, dynamic>;
+      final json = Map<String, dynamic>.from(item);
       final session = GameSessionModel.fromJson(json);
 
       sessions.add(session);
     }
+
     return sessions;
   }
 
-  Future<void> getPendingSessions() async {}
+  Future<List<GameSessionModel>> getPendingSessions() async {
+    final response = await _localdatabase.database.query(
+      'game_sessions',
+      where: 'syncStatus = ?',
+      whereArgs: ['pending'],
+      orderBy: 'completedAt ASC',
+    );
 
-  Future<void> updateSessionSyncStatus() async {}
+    final List<GameSessionModel> sessions = [];
 
-  Future<void> deleteSession() async {}
+    for (final item in response) {
+      final json = Map<String, dynamic>.from(item);
+      final session = GameSessionModel.fromJson(json);
 
-  Future<void> getAverageDuration() async {}
+      sessions.add(session);
+    }
+
+    return sessions;
+  }
+
+  Future<void> updateSessionSyncStatus({
+    required String sessionId,
+    required String status,
+  }) async {
+    await _localdatabase.database.update(
+      'game_sessions',
+      {'syncStatus': status},
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  Future<void> deleteSession({required String sessionId}) async {
+    await _localdatabase.database.delete(
+      'game_sessions',
+      where: 'id = ?',
+      whereArgs: [sessionId],
+    );
+  }
+
+  Future<double?> getAverageDuration() async {
+    final response = await _localdatabase.database.rawQuery(
+      'SELECT AVG(durationMs) AS averageDuration FROM game_sessions',
+    );
+
+    final average = response.first['averageDuration'];
+
+    if (average == null) {
+      return null;
+    }
+
+    return (average as num).toDouble();
+  }
 }

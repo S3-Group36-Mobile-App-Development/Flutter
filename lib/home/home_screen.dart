@@ -99,7 +99,7 @@ class _HomePageState extends State<HomePage> {
                 ),
               ),
             ),
-            HomeButtons(),
+            HomeButtons(isAuthenticated: widget.authViewModel.isAuthenticated),
             const SizedBox(height: 24),
           ],
         ),
@@ -129,7 +129,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(authViewModel: widget.authViewModel),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 }
