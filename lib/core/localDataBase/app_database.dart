@@ -3,11 +3,36 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const String _databaseName = 'zenmind.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   final Database database;
 
   AppDatabase._(this.database);
+
+  static const String _createGameSessions = '''
+    CREATE TABLE IF NOT EXISTS game_sessions (
+      id TEXT PRIMARY KEY,
+      durationMs INTEGER NOT NULL,
+      errors INTEGER NOT NULL,
+      correctTaps INTEGER NOT NULL,
+      completedAt TEXT NOT NULL,
+      syncStatus TEXT NOT NULL
+    )
+  ''';
+
+  static const String _createBreathingExercises = '''
+    CREATE TABLE IF NOT EXISTS breathing_exercises (
+      id TEXT PRIMARY KEY,
+      titulo TEXT NOT NULL,
+      descripcion TEXT,
+      duracion INTEGER NOT NULL,
+      patron TEXT NOT NULL,
+      vibra INTEGER NOT NULL,
+      usageCount INTEGER NOT NULL,
+      ratingAvg TEXT NOT NULL,
+      ratingCount INTEGER NOT NULL
+    )
+  ''';
 
   static Future<AppDatabase> open() async {
     final dbPath = await getDatabasesPath();
@@ -17,16 +42,12 @@ class AppDatabase {
       path,
       version: _databaseVersion,
       onCreate: (db, version) async {
-        await db.execute('''
-          CREATE TABLE game_sessions (
-            id TEXT PRIMARY KEY,
-            durationMs INTEGER NOT NULL,
-            errors INTEGER NOT NULL,
-            correctTaps INTEGER NOT NULL,
-            completedAt TEXT NOT NULL,
-            syncStatus TEXT NOT NULL
-          )
-        ''');
+        await db.execute(_createGameSessions);
+        await db.execute(_createBreathingExercises);
+      },
+      onUpgrade: (db, oldVersion, newVersion) async {
+        await db.execute(_createGameSessions);
+        await db.execute(_createBreathingExercises);
       },
     );
 
