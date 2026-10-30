@@ -1,15 +1,33 @@
+import 'package:sqflite/sqflite.dart';
 import 'package:zenmind/core/localDataBase/app_database.dart';
 import 'package:zenmind/features/protocols/data/models/protocol_model.dart';
+import 'package:zenmind/features/protocols/data/models/protocol_step_model.dart';
 
 class ProtocolLocalService {
   final AppDatabase _localdatabase;
 
   ProtocolLocalService({required this._localdatabase});
 
-  Future<void> saveSession(ProtocolModel protocol) async {
-    final protocolData = {...protocol.toJson(), 'syncStatus': 'pending'};
+  Future<void> saveSession(
+    ProtocolModel protocol, {
+    String syncStatus = 'synced',
+  }) async {
+    await _localdatabase.database.insert('protocols', {
+      'id': protocol.id,
+      'usuarioId': protocol.usuarioId,
+      'titulo': protocol.titulo,
+      'esPredefinido': protocol.esPredefinido ? 1 : 0,
+      'syncStatus': syncStatus,
+    }, conflictAlgorithm: ConflictAlgorithm.replace);
 
-    await _localdatabase.database.insert('protocols', protocolData);
+    for (final paso in protocol.pasos) {
+      await _localdatabase.database.insert('protocol_steps', {
+        'id': paso.id,
+        'protocoloId': protocol.id,
+        'ordenPaso': paso.ordenPaso,
+        'descripcion': paso.descripcion,
+      }, conflictAlgorithm: ConflictAlgorithm.replace);
+    }
   }
 
   Future<List<ProtocolModel>> getProtocols() async {
@@ -18,10 +36,7 @@ class ProtocolLocalService {
     final List<ProtocolModel> protocols = [];
 
     for (final item in response) {
-      final json = Map<String, dynamic>.from(item);
-      final protocol = ProtocolModel.fromJson(json);
-
-      protocols.add(protocol);
+      protocols.add(await _buildProtocol(item));
     }
 
     return protocols;
@@ -37,13 +52,41 @@ class ProtocolLocalService {
     final List<ProtocolModel> protocols = [];
 
     for (final item in response) {
-      final json = Map<String, dynamic>.from(item);
-      final protocol = ProtocolModel.fromJson(json);
-
-      protocols.add(protocol);
+      protocols.add(await _buildProtocol(item));
     }
 
     return protocols;
+  }
+
+  Future<ProtocolModel> _buildProtocol(Map<String, dynamic> row) async {
+    final id = row['id'].toString();
+
+    final stepRows = await _localdatabase.database.query(
+      'protocol_steps',
+      where: 'protocoloId = ?',
+      whereArgs: [id],
+      orderBy: 'ordenPaso ASC',
+    );
+
+    final List<ProtocolStepModel> pasos = [];
+    for (final step in stepRows) {
+      pasos.add(
+        ProtocolStepModel(
+          id: step['id'].toString(),
+          protocoloId: id,
+          ordenPaso: step['ordenPaso'] as int,
+          descripcion: step['descripcion'] as String,
+        ),
+      );
+    }
+
+    return ProtocolModel(
+      id: id,
+      usuarioId: row['usuarioId']?.toString(),
+      titulo: row['titulo'] as String,
+      esPredefinido: (row['esPredefinido'] as int) == 1,
+      pasos: pasos,
+    );
   }
 
   Future<void> updateProtocolSyncStatus({

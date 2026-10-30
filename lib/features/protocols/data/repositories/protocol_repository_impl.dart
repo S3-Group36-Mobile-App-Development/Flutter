@@ -1,6 +1,5 @@
-import 'package:dio/dio.dart';
 import 'package:zenmind/core/errors/local_database_exception.dart';
-import 'package:zenmind/core/errors/network_exception.dart';
+import 'package:zenmind/features/protocols/data/models/protocol_model.dart';
 import 'package:zenmind/features/protocols/data/services/protocol_api_service.dart';
 import 'package:zenmind/features/protocols/data/services/protocol_cache_service.dart';
 import 'package:zenmind/features/protocols/data/services/protocol_local_service.dart';
@@ -19,26 +18,77 @@ class ProtocolRepositoryImpl implements ProtocolRepository {
   });
 
   @override
-  Future<List<Protocol>> getProtocols() {
-    // TODO: implement getProtocols
-    throw UnimplementedError();
+  Future<void> saveProtocol(Protocol protocol) async {
+    final model = ProtocolModel.fromEntity(protocol);
+
+    try {
+      final saved = await _protocolApiService.postProtocol(protocol: model);
+      _protocolCacheService.save(saved);
+    } catch (e) {
+      try {
+        await _protocollocalService.saveSession(model, syncStatus: 'pending');
+      } catch (e) {
+        throw const LocalDatabaseException(
+          'No se pudo guardar el protocolo en el dispositivo.',
+        );
+      }
+
+      _protocolCacheService.save(protocol);
+    }
   }
 
   @override
-  Future<void> saveProtocol(Protocol protocol) {
-    // TODO: implement saveProtocol
-    throw UnimplementedError();
+  Future<List<Protocol>> getProtocols() async {
+    try {
+      final protocols = await _protocolApiService.getProtocol();
+
+      for (final protocol in protocols.take(_protocolCacheService.capacity)) {
+        await _protocollocalService.saveSession(
+          ProtocolModel.fromEntity(protocol),
+        );
+      }
+
+      return protocols;
+    } catch (e) {
+      return await _protocollocalService.getProtocols();
+    }
   }
 
   @override
-  Future<void> syncPendingProtocols() {
-    // TODO: implement syncPendingProtocols
-    throw UnimplementedError();
+  Future<void> syncPendingProtocols() async {
+    final pendingProtocols = await _protocollocalService.getPendingProtocols();
+
+    for (final protocol in pendingProtocols) {
+      await _protocolApiService.postProtocol(protocol: protocol);
+
+      await _protocollocalService.updateProtocolSyncStatus(
+        protocolId: protocol.id,
+        status: 'synced',
+      );
+
+      await _protocollocalService.deleteProtocol(protocolId: protocol.id);
+    }
   }
 
   @override
-  Future<void> updateProtocols() {
-    // TODO: implement updateProtocols
-    throw UnimplementedError();
+  Future<void> updateProtocols() async {
+    final cached = _protocolCacheService.getAll();
+
+    if (cached.isNotEmpty) {
+      for (final protocol in cached) {
+        final updated = await _protocolApiService.putProtocol(
+          protocol: ProtocolModel.fromEntity(protocol),
+        );
+        _protocolCacheService.update(updated);
+      }
+      return;
+    }
+
+    final protocols = await _protocolApiService.getProtocol();
+    for (final protocol in protocols.take(_protocolCacheService.capacity)) {
+      await _protocollocalService.saveSession(
+        ProtocolModel.fromEntity(protocol),
+      );
+    }
   }
 }

@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const String _databaseName = 'zenmind.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   final Database database;
 
@@ -38,7 +38,8 @@ class AppDatabase {
     id TEXT PRIMARY KEY,
     usuarioId TEXT,
     titulo TEXT NOT NULL,
-    esPredefinido INTEGER NOT NULL
+    esPredefinido INTEGER NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'synced'
   )
 ''';
 
@@ -62,14 +63,16 @@ class AppDatabase {
       onCreate: (db, version) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
-        await db.execute(_createProtocolSteps);
         await db.execute(_createProtocols);
+        await db.execute(_createProtocolSteps);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
-        await db.execute(_createProtocolSteps);
+        await db.execute('DROP TABLE IF EXISTS protocol_steps');
+        await db.execute('DROP TABLE IF EXISTS protocols');
         await db.execute(_createProtocols);
+        await db.execute(_createProtocolSteps);
       },
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');
