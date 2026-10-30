@@ -51,7 +51,7 @@ class GameRepositoryImpl implements GameRepository {
 
     for (final session in pendingSessions) {
       try {
-        await _gameApiService.postSession(session: session);
+        await _postWithRetry(session);
 
         await _gamelocalService.updateSessionSyncStatus(
           sessionId: session.id,
@@ -59,13 +59,58 @@ class GameRepositoryImpl implements GameRepository {
         );
 
         await _gamelocalService.deleteSession(sessionId: session.id);
-      } on DioException {
-        // Problema de red: detenemos la sincronización para reintentar luego.
-        throw const NetworkException();
+      } on NetworkException {
+        rethrow;
+      } on DioException catch (e) {
+        if (_isTransient(e)) {
+          throw const NetworkException();
+        }
+        continue;
       } catch (e) {
-        // Error puntual con una partida: seguimos con las demás.
         continue;
       }
+    }
+  }
+
+  Future<void> _postWithRetry(GameSessionModel session) async {
+    const maxAttempts = 3;
+
+    for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+      try {
+        await _gameApiService.postSession(session: session);
+        return;
+      } on DioException catch (e) {
+        final isLastAttempt = attempt == maxAttempts;
+
+        if (!_isTransient(e)) {
+          rethrow;
+        }
+
+        if (isLastAttempt) {
+          throw const NetworkException(
+            'El servidor tardó demasiado en responder. '
+            'Tus partidas siguen guardadas y se reintentará más tarde.',
+          );
+        }
+
+        await Future<void>.delayed(Duration(seconds: 2 * attempt));
+      }
+    }
+  }
+
+  bool _isTransient(DioException error) {
+    switch (error.type) {
+      case DioExceptionType.connectionTimeout:
+      case DioExceptionType.sendTimeout:
+      case DioExceptionType.receiveTimeout:
+      case DioExceptionType.connectionError:
+      case DioExceptionType.unknown:
+        return true;
+      case DioExceptionType.badResponse:
+        final code = error.response?.statusCode;
+        return code == 502 || code == 503 || code == 504;
+      default:
+        return false;
     }
   }
 

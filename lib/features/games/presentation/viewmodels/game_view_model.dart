@@ -16,7 +16,6 @@ class GameViewModel extends ChangeNotifier {
     required this._connectivityService,
   });
 
-  // ESTADO
   List<GameSession> _sessions = [];
   List<GameSession> get sessions => _sessions;
 
@@ -43,7 +42,6 @@ class GameViewModel extends ChangeNotifier {
 
   StreamSubscription<bool>? _connectivitySubscription;
 
-  // INICIALIZACIÓN
   Future<void> initialize({required bool isAuthenticated}) async {
     try {
       _isOnline = await _connectivityService.isConnected;
@@ -51,7 +49,6 @@ class GameViewModel extends ChangeNotifier {
       _isOnline = false;
     }
 
-    // Escuchar cambios de conexión.
     _connectivitySubscription = _connectivityService.onConnectivityChanged
         .listen(
           (connected) {
@@ -59,7 +56,6 @@ class GameViewModel extends ChangeNotifier {
             _isOnline = connected;
             notifyListeners();
 
-            // Si recuperamos la conexión, intentamos sincronizar.
             if (wasOffline && connected && isAuthenticated) {
               syncPendingSessions(isAuthenticated: isAuthenticated);
             }
@@ -85,13 +81,11 @@ class GameViewModel extends ChangeNotifier {
 
     await loadGameData();
 
-    // Al iniciar, intentamos sincronizar si corresponde.
     if (_isOnline && isAuthenticated) {
       await syncPendingSessions(isAuthenticated: isAuthenticated);
     }
   }
 
-  // CARGAR HISTORIAL Y PROMEDIO
   Future<void> loadGameData() async {
     if (_isLoading) return;
 
@@ -111,7 +105,23 @@ class GameViewModel extends ChangeNotifier {
     }
   }
 
-  // GUARDAR UNA PARTIDA
+  Future<bool> finishGame({
+    required int durationMs,
+    required int errors,
+    required int correctTaps,
+    required bool isAuthenticated,
+  }) {
+    final session = GameSession(
+      id: DateTime.now().millisecondsSinceEpoch.toString(),
+      durationMs: durationMs,
+      errors: errors,
+      correctTaps: correctTaps,
+      completedAt: DateTime.now().toIso8601String(),
+    );
+
+    return saveSession(session, isAuthenticated: isAuthenticated);
+  }
+
   Future<bool> saveSession(
     GameSession session, {
     required bool isAuthenticated,
@@ -124,7 +134,6 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // PASO 1: guardar primero en SQLite.
       await _gameRepository.saveSession(session);
     } on LocalDatabaseException {
       _message =
@@ -143,10 +152,8 @@ class GameViewModel extends ChangeNotifier {
       notifyListeners();
     }
 
-    // PASO 2: actualizar la información local.
     await _refreshLocalData();
 
-    // PASO 3: informar según la conexión y autenticación.
     if (!isAuthenticated) {
       _message =
           'Tu partida quedó guardada en este dispositivo. '
@@ -158,11 +165,8 @@ class GameViewModel extends ChangeNotifier {
           'Se sincronizará cuando vuelva la conexión.';
       _hasError = false;
     } else {
-      // PASO 4: intentar sincronizar si hay conexión.
       await syncPendingSessions(isAuthenticated: isAuthenticated);
 
-      // Si la sincronización no pudo completarse,
-      // la partida sigue guardada localmente.
       if (_message == null) {
         _message = 'Tu partida se guardó correctamente.';
         _hasError = false;
@@ -172,10 +176,6 @@ class GameViewModel extends ChangeNotifier {
     notifyListeners();
     return true;
   }
-
-  // -------------------------
-  // SINCRONIZAR PENDIENTES
-  // -------------------------
 
   Future<void> syncPendingSessions({required bool isAuthenticated}) async {
     if (_isSyncing || !_isOnline || !isAuthenticated) {
@@ -209,34 +209,19 @@ class GameViewModel extends ChangeNotifier {
     }
   }
 
-  // -------------------------
-  // ACTUALIZAR INFORMACIÓN LOCAL
-  // -------------------------
-
   Future<void> _refreshLocalData() async {
     try {
       _sessions = await _gameRepository.getSessionHistory();
 
       _averageDuration = await _gameRepository.getAverageDuration();
-    } catch (_) {
-      // No declaramos que falló el guardado:
-      // esta operación solo actualiza la información visual.
-    }
+    } catch (_) {}
   }
-
-  // -------------------------
-  // LIMPIAR MENSAJE
-  // -------------------------
 
   void clearMessage() {
     _message = null;
     _hasError = false;
     notifyListeners();
   }
-
-  // -------------------------
-  // CERRAR VIEWMODEL
-  // -------------------------
 
   @override
   void dispose() {
