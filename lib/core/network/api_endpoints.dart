@@ -11,6 +11,10 @@ class ApiEndpoints {
   static const checkins = '/api/v1/chequeos';
   static const profile = '/api/v1/usuarios/me';
 
+  //Endpoints Breathing
+  static const getExercices = '/api/v1/respira/ejercicios';
+  static String breathingExercice(String id) => '/respira/ejercicios/$id';
+
   //Endpoints Games
 
   static const uploadSesion = '/api/v1/juegos/sesiones';

@@ -26,8 +26,22 @@ class AppDatabase {
             completedAt TEXT NOT NULL,
             syncStatus TEXT NOT NULL
           )
+        ''', );
+              await db.execute('''
+          CREATE TABLE breathing_exercises (
+            id TEXT PRIMARY KEY,
+            titulo TEXT NOT NULL,
+            descripcion TEXT,
+            duracion INTEGER NOT NULL,
+            patron TEXT NOT NULL,
+            vibra INTEGER NOT NULL,
+            usageCount INTEGER NOT NULL,
+            ratingAvg TEXT NOT NULL,
+            ratingCount INTEGER NOT NULL
+          )
         ''');
-      },
+            },
+
     );
 
     return AppDatabase._(database);

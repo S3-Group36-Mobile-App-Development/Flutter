@@ -1,4 +1,4 @@
-class EjercicioRespiracion {
+class BreathingExercice {
   final String id;
   final String titulo;
   final String? descripcion;
@@ -9,7 +9,7 @@ class EjercicioRespiracion {
   final double raitingAvg;
   final int ratingCoutn;
 
-  EjercicioRespiracion({
+  BreathingExercice({
     required this.id,
     required this.titulo,
     this.descripcion,
@@ -18,7 +18,7 @@ class EjercicioRespiracion {
     required this.vibra, 
     required this.usageCount, 
     required this.raitingAvg, 
-    required this.ratingCoutn,
+    required this.ratingCoutn
   });
 
 }
