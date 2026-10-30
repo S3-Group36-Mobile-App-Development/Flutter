@@ -1,238 +1,286 @@
 import 'dart:async';
+
 import 'package:flutter/foundation.dart';
-import '../../data/services/sensor_service.dart';
-import '../../data/services/vibration_service.dart';
-import '../../domain/entities/movement_context.dart';
+import 'package:zenmind/core/errors/network_exception.dart';
+import 'package:zenmind/core/services/conectivity_service.dart';
+import 'package:zenmind/features/breathing/data/repositories/breathing_repository.dart';
+import 'package:zenmind/features/breathing/data/services/sensor_service.dart';
+import 'package:zenmind/features/breathing/data/services/vibration_service.dart';
+import 'package:zenmind/features/breathing/domain/entities/breathing_exercice.dart';
+import 'package:zenmind/features/breathing/domain/entities/breathing_pattern.dart';
+import 'package:zenmind/features/breathing/domain/entities/movement_context.dart';
+
+enum BreathingStatus { idle, running, finished }
 
 class BreathingViewModel extends ChangeNotifier {
+  final BreathingRepository _repository;
   final SensorService _sensorService;
   final VibrationService _vibrationService;
-
-  StreamSubscription<double>? _movementSubscription;
-  Timer? _breathingTimer;
-
-  MovementContext _context = MovementContext.still;
-
-  double _movement = 0;
-
-  bool _isBreathing = false;
-
-  int _secondsRemaining = 0;
-
-  int _currentCycle = 0;
-
-  final int _totalCycles = 5;
-
-  String _phase = 'Listo para comenzar';
+  final ConnectivityService _connectivityService;
 
   BreathingViewModel({
+    required this._repository,
     required this._sensorService,
     required this._vibrationService,
+    required this._connectivityService,
   });
 
+  List<BreathingExercice> _exercices = [];
+  List<BreathingExercice> get exercices => _exercices;
+
+  BreathingExercice? _selected;
+  BreathingExercice? get selected => _selected;
+
+  BreathingExercice? _favorite;
+  BreathingExercice? get favorite => _favorite;
+
+  bool _isLoading = false;
+  bool get isLoading => _isLoading;
+
+  bool _isOnline = false;
+  bool get isOnline => _isOnline;
+
+  bool _isSavingRating = false;
+  bool get isSavingRating => _isSavingRating;
+
+  String? _message;
+  String? get message => _message;
+
+  bool _hasError = false;
+  bool get hasError => _hasError;
+
+  BreathingStatus _status = BreathingStatus.idle;
+  BreathingStatus get status => _status;
+  bool get isBreathing => _status == BreathingStatus.running;
+
+  MovementContext _context = MovementContext.still;
   MovementContext get context => _context;
+  bool get hasHighMovement => _context == MovementContext.moving;
 
-  double get movement => _movement;
-
-  bool get isBreathing => _isBreathing;
-
-  int get secondsRemaining => _secondsRemaining;
-
-  int get currentCycle => _currentCycle;
-
-  int get totalCycles => _totalCycles;
-
+  String _phase = 'Listo para comenzar';
   String get phase => _phase;
 
-  bool get hasHighMovement =>
-      _context == MovementContext.moving;
+  int _secondsRemaining = 0;
+  int get secondsRemaining => _secondsRemaining;
 
-  String get contextMessage {
-    if (_context == MovementContext.moving) {
-      return 'Detectamos movimiento. Busca una posición estable antes de comenzar.';
+  int _currentCycle = 0;
+  int get currentCycle => _currentCycle;
+
+  int get totalCycles => _activePattern?.cycles ?? 0;
+
+  bool get selectedIsFavorite =>
+      _selected != null && _selected!.id == _favorite?.id;
+
+  BreathingPattern? _activePattern;
+
+  StreamSubscription<double>? _movementSubscription;
+  StreamSubscription<bool>? _connectivitySubscription;
+
+  Future<void> initialize() async {
+    try {
+      _isOnline = await _connectivityService.isConnected;
+    } catch (_) {
+      _isOnline = false;
     }
 
-    return 'Tu movimiento es bajo. Estás listo para comenzar.';
+    _connectivitySubscription = _connectivityService.onConnectivityChanged
+        .listen(
+          (connected) {
+            final wasOffline = !_isOnline;
+            _isOnline = connected;
+
+            if (wasOffline && connected) {
+              _message = 'Conexión recuperada.';
+              _hasError = false;
+              loadExercices();
+            } else if (!connected) {
+              _message =
+                  'No tienes conexión a internet. '
+                  'Mostramos tu ejercicio favorito guardado.';
+              _hasError = false;
+            }
+
+            notifyListeners();
+          },
+          onError: (_) {
+            _isOnline = false;
+            notifyListeners();
+          },
+        );
+
+    _startSensor();
+    await loadExercices();
   }
 
-  void startSensor() {
+  Future<void> loadExercices() async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _exercices = await _repository.getExercices();
+      _selected ??= _exercices.isEmpty ? null : _exercices.first;
+      _hasError = false;
+    } catch (_) {
+      _message = 'No se pudieron cargar los ejercicios de respiración.';
+      _hasError = true;
+    }
+
+    try {
+      _favorite = await _repository.getFavorite();
+    } catch (_) {
+      _favorite = null;
+    }
+
+    _isLoading = false;
+    notifyListeners();
+  }
+
+  void selectExercice(BreathingExercice exercice) {
+    _selected = exercice;
+  }
+
+  Future<void> markSelectedAsFavorite() async {
+    if (_selected == null) return;
+
+    try {
+      await _repository.saveFavorite(_selected!);
+      _favorite = _selected;
+      _message = 'Guardamos "${_selected!.titulo}" como tu favorito.';
+      _hasError = false;
+    } catch (_) {
+      _message = 'No se pudo guardar tu favorito.';
+      _hasError = true;
+    }
+
+    notifyListeners();
+  }
+
+  void _startSensor() {
     _sensorService.start();
-
     _movementSubscription?.cancel();
-
-    _movementSubscription =
-        _sensorService.movementStream.listen(
+    _movementSubscription = _sensorService.movementStream.listen(
       _onMovementDetected,
     );
   }
 
   void _onMovementDetected(double value) {
-    _movement = value;
+    final next = (value - 9.8).abs() > 0.5
+        ? MovementContext.moving
+        : MovementContext.still;
 
-    final movementDifference =
-        (value - 9.8).abs();
-
-    if (movementDifference > 0.5) {
-      _context = MovementContext.moving;
-    } else {
-      _context = MovementContext.still;
-    }
-
+    if (next == _context) return;
+    _context = next;
     notifyListeners();
   }
 
   Future<void> startBreathing() async {
-    if (_isBreathing) {
-      return;
-    }
+    if (_status == BreathingStatus.running || _selected == null) return;
 
     if (hasHighMovement) {
       _phase = 'Busca una posición estable';
-
       _secondsRemaining = 0;
-
       notifyListeners();
-
       return;
     }
 
-    _isBreathing = true;
-
-    _currentCycle = 1;
-
+    final pattern = BreathingPattern.fromMap(_selected!.patron);
+    _activePattern = pattern;
+    _status = BreathingStatus.running;
+    _currentCycle = 0;
     notifyListeners();
 
-    await _runPhase(
-      name: 'Inhala',
-      seconds: 4,
-    );
-
-    await _runPhase(
-      name: 'Sostén',
-      seconds: 4,
-    );
-
-    await _runPhase(
-      name: 'Exhala',
-      seconds: 6,
-    );
-
-    for (int cycle = 2; cycle <= _totalCycles; cycle++) {
-      if (!_isBreathing) {
-        return;
-      }
-
+    for (int cycle = 1; cycle <= pattern.cycles; cycle++) {
       _currentCycle = cycle;
-
       notifyListeners();
 
-      await _runPhase(
-        name: 'Inhala',
-        seconds: 4,
-      );
+      await _runPhase('Inhala', pattern.inhaleSeconds);
+      await _runPhase('Sostén', pattern.holdSeconds);
+      await _runPhase('Exhala', pattern.exhaleSeconds);
+      await _runPhase('Sostén', pattern.hold2Seconds);
 
-      await _runPhase(
-        name: 'Sostén',
-        seconds: 4,
-      );
-
-      await _runPhase(
-        name: 'Exhala',
-        seconds: 6,
-      );
-    }
-
-    if (!_isBreathing) {
-      return;
+      if (_status != BreathingStatus.running) return;
     }
 
     _phase = 'Ejercicio completado';
-
     _secondsRemaining = 0;
-
-    _isBreathing = false;
-
+    _status = BreathingStatus.finished;
     notifyListeners();
   }
 
-  Future<void> _runPhase({
-    required String name,
-    required int seconds,
-  }) async {
-    if (!_isBreathing) {
-      return;
-    }
+  Future<void> _runPhase(String name, int seconds) async {
+    if (seconds <= 0 || _status != BreathingStatus.running) return;
 
     _phase = name;
-
     _secondsRemaining = seconds;
-
-    await _vibrationService.vibrate();
-
+    if (_selected?.vibra ?? false) {
+      await _vibrationService.vibrate();
+    }
     notifyListeners();
 
-    _breathingTimer?.cancel();
-
-    final completer = Completer<void>();
-
-    int remaining = seconds;
-
-    _breathingTimer = Timer.periodic(
-      const Duration(seconds: 1),
-      (timer) {
-        if (!_isBreathing) {
-          timer.cancel();
-
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-
-          return;
-        }
-
-        remaining--;
-
-        _secondsRemaining = remaining;
-
-        notifyListeners();
-
-        if (remaining <= 0) {
-          timer.cancel();
-
-          if (!completer.isCompleted) {
-            completer.complete();
-          }
-        }
-      },
-    );
-
-    await completer.future;
+    while (_secondsRemaining > 0) {
+      await Future<void>.delayed(const Duration(seconds: 1));
+      if (_status != BreathingStatus.running) return;
+      _secondsRemaining--;
+      notifyListeners();
+    }
   }
 
-  Future<void> stop() async {
-    _isBreathing = false;
+  Future<void> submitRating({int? stars}) async {
+    if (_selected == null) return;
 
-    _breathingTimer?.cancel();
+    final bool rated = stars != null && stars > 0;
 
-    _breathingTimer = null;
+    _isSavingRating = true;
+    notifyListeners();
 
+    try {
+      await _repository.rateExercise(
+        id: _selected!.id,
+        rating: rated ? stars : 0,
+        optional: rated ? 1 : 0,
+      );
+
+      _message = rated
+          ? 'Gracias por calificar este ejercicio.'
+          : 'Registramos que completaste el ejercicio.';
+      _hasError = false;
+    } on NetworkException {
+      _message =
+          'No fue posible enviar tu calificación. '
+          'Revisa tu conexión e inténtalo más tarde.';
+      _hasError = false;
+    } catch (_) {
+      _message = 'No se pudo registrar tu calificación.';
+      _hasError = false;
+    } finally {
+      _isSavingRating = false;
+      notifyListeners();
+    }
+  }
+
+  void stop() => resetToSelection();
+
+  void resetToSelection() {
+    _status = BreathingStatus.idle;
     _phase = 'Listo para comenzar';
-
     _secondsRemaining = 0;
-
     _currentCycle = 0;
+    notifyListeners();
+  }
 
+  void clearMessage() {
+    _message = null;
+    _hasError = false;
     notifyListeners();
   }
 
   @override
   void dispose() {
     _movementSubscription?.cancel();
-
-    _breathingTimer?.cancel();
-
+    _connectivitySubscription?.cancel();
     _sensorService.dispose();
-
     super.dispose();
   }
 }

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/features/breathing/breathing_factory.dart';
 import 'package:zenmind/features/breathing/presentation/views/breathing_page.dart';
 import 'package:zenmind/features/games/game_factory.dart';
 import 'package:zenmind/features/games/presentation/views/bubble_game_page.dart';
@@ -30,6 +31,24 @@ class HomeButtons extends StatelessWidget {
           isAuthenticated: isAuthenticated,
         ),
       ),
+    );
+  }
+
+  Future<void> _openBreathing(BuildContext context) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: AppColors.clay)),
+    );
+
+    final viewModel = await buildBreathingViewModel();
+
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => BreathingPage(viewModel: viewModel)),
     );
   }
 
@@ -166,14 +185,7 @@ class HomeButtons extends StatelessWidget {
               children: [
                 SizedBox(
                   child: ElevatedButton(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => BreathingPage(),
-                        ),
-                      );
-                    },
+                    onPressed: () => _openBreathing(context),
                     style: ElevatedButton.styleFrom(
                       fixedSize: const Size(170, 170),
                       padding: const EdgeInsets.symmetric(

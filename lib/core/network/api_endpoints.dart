@@ -13,7 +13,7 @@ class ApiEndpoints {
 
   //Endpoints Breathing
   static const getExercices = '/api/v1/respira/ejercicios';
-  static String breathingExercice(String id) => '/respira/ejercicios/$id';
+  static String breathingExercice(String id) => '/api/v1/respira/ejercicios/$id';
 
   //Endpoints Games
 

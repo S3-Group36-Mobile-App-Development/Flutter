@@ -1,4 +1,3 @@
-import 'package:dio/dio.dart';
 import 'package:zenmind/core/network/api_client.dart';
 import 'package:zenmind/core/network/api_endpoints.dart';
 import 'package:zenmind/features/breathing/data/models/breathing_exercice_model.dart';
@@ -9,7 +8,9 @@ class BreathingApiService {
   BreathingApiService({required this._apiClient});
 
   Future<List<BreathingExerciceModel>> getExercices() async {
-    final response = await _apiClient.get<List<dynamic>>(ApiEndpoints.getExercices);
+    final response = await _apiClient.get<List<dynamic>>(
+      ApiEndpoints.getExercices,
+    );
 
     final data = response.data!;
     final List<BreathingExerciceModel> exercices = [];
@@ -23,24 +24,39 @@ class BreathingApiService {
     return exercices;
   }
 
-  Future<BreathingExerciceModel> updateCounts({required String id, required int rating, required int optional}) async {
-    final response = await _apiClient.get<Map<String, dynamic>>(ApiEndpoints.breathingExercice(id));
+  Future<BreathingExerciceModel> updateCounts({
+    required String id,
+    required int rating,
+    required int optional,
+  }) async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.breathingExercice(id),
+    );
 
     final exercice = response.data!;
-    final usage = (exercice['usageCount'] as int) + 1;
-    final raitingCount = (exercice['raitingCount'] as int) + optional;
-    final raitingAvg = exercice['raitingAvg'] as double;
-    final newAvg = (raitingAvg * (raitingCount-optional) + rating)/raitingCount;
 
-    final data=<String, dynamic>{
-      'usageCount': usage,
-      'raitingCount':raitingCount,
-      'raitingAvg': newAvg
+    final oldUsage = exercice['usageCount'] as int;
+    final oldRatingCount = exercice['ratingCount'] as int;
+    final oldRatingAvg = double.parse(exercice['ratingAvg'].toString());
+
+    final newUsage = oldUsage + 1;
+    final newRatingCount = oldRatingCount + optional;
+
+    final double newAvg = newRatingCount == 0
+        ? 0
+        : (oldRatingAvg * oldRatingCount + rating) / newRatingCount;
+
+    final data = <String, dynamic>{
+      'usageCount': newUsage,
+      'ratingCount': newRatingCount,
+      'ratingAvg': newAvg.toString(),
     };
 
-    final response1 = await _apiClient.put<Map<String, dynamic>>(ApiEndpoints.breathingExercice(id), data: data);
+    final updated = await _apiClient.put<Map<String, dynamic>>(
+      ApiEndpoints.breathingExercice(id),
+      data: data,
+    );
 
-    return BreathingExerciceModel.fromJson(response1.data!);
-
+    return BreathingExerciceModel.fromJson(updated.data!);
   }
 }

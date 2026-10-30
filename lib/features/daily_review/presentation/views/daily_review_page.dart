@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
 import '../../../../core/theme/app_colors.dart';
+import '../../../breathing/breathing_factory.dart';
 import '../../../breathing/presentation/views/breathing_page.dart';
 import '../../domain/entities/mood.dart';
 import '../../domain/repositories/daily_review_repository.dart';
@@ -168,7 +169,8 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
                   maxLength: 1000,
                   style: GoogleFonts.livvic(color: AppColors.coffe),
                   decoration: InputDecoration(
-                    hintText: 'Describe brevemente cómo fluyen tus '
+                    hintText:
+                        'Describe brevemente cómo fluyen tus '
                         'pensamientos hoy...',
                     hintStyle: GoogleFonts.livvic(
                       color: AppColors.coffe.withValues(alpha: 0.4),
@@ -245,19 +247,30 @@ class _DailyReviewPageState extends State<DailyReviewPage> {
           const SizedBox(height: 20),
           StreakChips(streak: _viewModel.streak),
           const SizedBox(height: 24),
-          RecommendationCardView(
-            card: card,
-            onAction: _openBreathing,
-          ),
+          RecommendationCardView(card: card, onAction: _openBreathing),
         ],
       ),
     );
   }
 
-  void _openBreathing() {
+  Future<void> _openBreathing() async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: AppColors.clay)),
+    );
+
+    final viewModel = await buildBreathingViewModel();
+
+    if (!mounted) return;
+    Navigator.of(context).pop();
+
     Navigator.pushReplacement(
       context,
-      MaterialPageRoute(builder: (context) => const BreathingPage()),
+      MaterialPageRoute(
+        builder: (context) => BreathingPage(viewModel: viewModel),
+      ),
     );
   }
 }
