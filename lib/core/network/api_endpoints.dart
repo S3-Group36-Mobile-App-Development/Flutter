@@ -13,10 +13,16 @@ class ApiEndpoints {
 
   //Endpoints Breathing
   static const getExercices = '/api/v1/respira/ejercicios';
-  static String breathingExercice(String id) => '/api/v1/respira/ejercicios/$id';
+  static String breathingExercice(String id) =>
+      '/api/v1/respira/ejercicios/$id';
 
   //Endpoints Games
 
   static const uploadSesion = '/api/v1/juegos/sesiones';
   static const sessions = '/api/v1/juegos/sesiones';
+
+  //Endpoints protocols
+  static const getAllProtocolos = '/api/v1/protocolos';
+  static const createProtocolo = '/api/v1/protocolos';
+  static String updateProtocolo(String id) => '/api/v1/protocolos/$id';
 }
