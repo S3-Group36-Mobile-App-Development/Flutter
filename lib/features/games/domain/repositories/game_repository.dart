@@ -9,4 +9,7 @@ abstract class GameRepository {
 
   // 3. Sincronizar las partidas pendientes con el backend.
   Future<void> syncPendingSessions();
+
+  // 4. Obtener la duración promedio de las partidas.
+  Future<double?> getAverageDuration();
 }

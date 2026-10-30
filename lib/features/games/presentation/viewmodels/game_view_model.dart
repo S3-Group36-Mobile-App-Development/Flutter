@@ -1,6 +1,8 @@
 import 'dart:async';
 
 import 'package:flutter/foundation.dart';
+import 'package:zenmind/core/errors/local_database_exception.dart';
+import 'package:zenmind/core/errors/network_exception.dart';
 import 'package:zenmind/core/services/conectivity_service.dart';
 import 'package:zenmind/features/games/domain/entities/game_session.dart';
 import 'package:zenmind/features/games/domain/repositories/game_repository.dart';
@@ -90,6 +92,24 @@ class GameViewModel extends ChangeNotifier {
   }
 
   // CARGAR HISTORIAL Y PROMEDIO
+  Future<void> loadGameData() async {
+    if (_isLoading) return;
+
+    _isLoading = true;
+    notifyListeners();
+
+    try {
+      _sessions = await _gameRepository.getSessionHistory();
+      _averageDuration = await _gameRepository.getAverageDuration();
+      _hasError = false;
+    } catch (_) {
+      _message = 'No se pudo cargar tu historial de partidas.';
+      _hasError = true;
+    } finally {
+      _isLoading = false;
+      notifyListeners();
+    }
+  }
 
   // GUARDAR UNA PARTIDA
   Future<bool> saveSession(
