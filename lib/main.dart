@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import 'core/auth/auth_state.dart';
 import 'core/constants/api_config.dart';
@@ -11,7 +12,10 @@ import 'features/authentication/presentation/viewmodels/auth_view_model.dart';
 import 'features/authentication/presentation/views/welcome_page.dart';
 import 'home/home_screen.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+
+  await SystemChrome.setPreferredOrientations([DeviceOrientation.portraitUp]);
   final secureStorage = SecureStorageService();
   final localStorage = LocalStorageService();
 
