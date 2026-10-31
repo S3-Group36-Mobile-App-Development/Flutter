@@ -3,7 +3,7 @@ import 'package:sqflite/sqflite.dart';
 
 class AppDatabase {
   static const String _databaseName = 'zenmind.db';
-  static const int _databaseVersion = 2;
+  static const int _databaseVersion = 3;
 
   final Database database;
 
@@ -33,6 +33,16 @@ class AppDatabase {
       ratingCount INTEGER NOT NULL
     )
   ''';
+  static const String _createPendingBreathingRatings = '''
+    CREATE TABLE IF NOT EXISTS pending_breathing_ratings (
+      id TEXT PRIMARY KEY,
+      exerciceId TEXT NOT NULL,
+      rating INTEGER NOT NULL,
+      optional INTEGER NOT NULL,
+      createdAt TEXT NOT NULL
+    )
+  ''';
+
 
   static Future<AppDatabase> open() async {
     final dbPath = await getDatabasesPath();
@@ -44,10 +54,15 @@ class AppDatabase {
       onCreate: (db, version) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
+        await db.execute(_createPendingBreathingRatings);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
+        await db.execute(_createPendingBreathingRatings);
+      },
+      onConfigure: (db) async {
+        await db.execute('PRAGMA foreign_keys = ON');
       },
     );
 
