@@ -1,8 +1,10 @@
 import 'dart:async';
 
+import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 import 'package:zenmind/core/errors/network_exception.dart';
 import 'package:zenmind/core/services/conectivity_service.dart';
+import 'package:zenmind/core/storage/secure_storage_service.dart';
 import 'package:zenmind/features/breathing/data/repositories/breathing_repository.dart';
 import 'package:zenmind/features/breathing/data/services/sensor_service.dart';
 import 'package:zenmind/features/breathing/data/services/vibration_service.dart';
@@ -17,12 +19,14 @@ class BreathingViewModel extends ChangeNotifier {
   final SensorService _sensorService;
   final VibrationService _vibrationService;
   final ConnectivityService _connectivityService;
+  final SecureStorageService _secureStorage;
 
   BreathingViewModel({
     required this._repository,
     required this._sensorService,
     required this._vibrationService,
     required this._connectivityService,
+    required this._secureStorage,
   });
 
   List<BreathingExercice> _exercices = [];
@@ -93,11 +97,6 @@ class BreathingViewModel extends ChangeNotifier {
               _message = 'Conexión recuperada.';
               _hasError = false;
               loadExercices();
-            } else if (!connected) {
-              _message =
-                  'No tienes conexión a internet. '
-                  'Mostramos tu ejercicio favorito guardado.';
-              _hasError = false;
             }
 
             notifyListeners();
@@ -235,6 +234,17 @@ class BreathingViewModel extends ChangeNotifier {
     _isSavingRating = true;
     notifyListeners();
 
+    final token = await _secureStorage.getAccessToken();
+    if (token == null || token.isEmpty) {
+      _message = rated
+          ? 'Inicia sesión para calificar los ejercicios.'
+          : 'Registramos que completaste el ejercicio.';
+      _hasError = false;
+      _isSavingRating = false;
+      notifyListeners();
+      return;
+    }
+
     try {
       await _repository.rateExercise(
         id: _selected!.id,
@@ -250,6 +260,11 @@ class BreathingViewModel extends ChangeNotifier {
       _message =
           'No fue posible enviar tu calificación. '
           'Revisa tu conexión e inténtalo más tarde.';
+      _hasError = false;
+    } on DioException catch (e) {
+      _message = e.response?.statusCode == 401
+          ? 'Tu sesión expiró. Inicia sesión para calificar.'
+          : 'No se pudo registrar tu calificación.';
       _hasError = false;
     } catch (_) {
       _message = 'No se pudo registrar tu calificación.';
