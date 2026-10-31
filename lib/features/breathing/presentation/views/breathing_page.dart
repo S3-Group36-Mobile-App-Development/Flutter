@@ -432,18 +432,7 @@ class _BreathingPageState extends State<BreathingPage> {
                 ),
                 if (!isStill) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange),
-                    ),
-                    child: Text(
-                      'Detectamos movimiento. Busca una posición estable.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(color: AppColors.coffe),
-                    ),
-                  ),
+                  _buildMovementBanner(),
                 ],
               ],
             ),
@@ -512,7 +501,7 @@ class _BreathingPageState extends State<BreathingPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'DETECTAMOS MOVIMIENTO. busca un lugar en el que puedas estar quietoxs ',
+              'DETECTAMOS MOVIMIENTO. Busca un lugar en el que puedas estar quieto.',
               style: GoogleFonts.livvic(
                 fontSize: 13,
                 color: AppColors.ivory,
