@@ -8,8 +8,9 @@ class ApiEndpoints {
   //Endpoints  Checkin
   static const me = '/api/v1/users/me';
   static const moods = '/api/v1/estados-animo';
-  static const checkins = '/api/v1/chequeos';
+  static const cuestionarios = '/api/v1/chequeos';
   static const profile = '/api/v1/usuarios/me';
+  static const flashcards = '/api/v1/flashcards';
 
   //Endpoints Breathing
   static const getExercices = '/api/v1/respira/ejercicios';
