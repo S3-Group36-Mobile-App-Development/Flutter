@@ -187,6 +187,7 @@ class _BreathingPageState extends State<BreathingPage> {
         ),
         const SizedBox(height: 12),
         if (!_viewModel.isOnline) _buildOfflineBanner(),
+        if (_viewModel.hasHighMovement) _buildMovementBanner(),
         if (_viewModel.message != null) _buildMessageBanner(),
         Expanded(
           child: exercices.isEmpty
@@ -306,6 +307,7 @@ class _BreathingPageState extends State<BreathingPage> {
 
   Widget _buildSelectionActions() {
     final hasSelection = _viewModel.selected != null;
+    final canStart = hasSelection && !_viewModel.hasHighMovement;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -315,7 +317,7 @@ class _BreathingPageState extends State<BreathingPage> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: hasSelection ? _viewModel.startBreathing : null,
+              onPressed: canStart ? _viewModel.startBreathing : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.clay,
                 foregroundColor: AppColors.coffe,
@@ -325,7 +327,7 @@ class _BreathingPageState extends State<BreathingPage> {
                 ),
               ),
               child: Text(
-                'Empezar',
+                _viewModel.hasHighMovement ? 'Mantente quieto' : 'Empezar',
                 style: GoogleFonts.shortStack(fontSize: 18),
               ),
             ),
@@ -430,18 +432,7 @@ class _BreathingPageState extends State<BreathingPage> {
                 ),
                 if (!isStill) ...[
                   const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange),
-                    ),
-                    child: Text(
-                      'Detectamos movimiento. Busca una posición estable.',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(color: AppColors.coffe),
-                    ),
-                  ),
+                  _buildMovementBanner(),
                 ],
               ],
             ),
@@ -487,6 +478,35 @@ class _BreathingPageState extends State<BreathingPage> {
             child: Text(
               'Sin conexión. Mostramos tu ejercicio favorito guardado.',
               style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildMovementBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.clay),
+        color: AppColors.clay,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.vibration, color: AppColors.ivory),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'DETECTAMOS MOVIMIENTO. Busca un lugar en el que puedas estar quieto.',
+              style: GoogleFonts.livvic(
+                fontSize: 13,
+                color: AppColors.ivory,
+                fontWeight: FontWeight.bold,
+              ),
             ),
           ),
         ],

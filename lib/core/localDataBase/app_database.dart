@@ -52,16 +52,6 @@ class AppDatabase {
     FOREIGN KEY (protocoloId) REFERENCES protocols (id) ON DELETE CASCADE
   )
 ''';
-  static const String _createPendingBreathingRatings = '''
-    CREATE TABLE IF NOT EXISTS pending_breathing_ratings (
-      id TEXT PRIMARY KEY,
-      exerciceId TEXT NOT NULL,
-      rating INTEGER NOT NULL,
-      optional INTEGER NOT NULL,
-      createdAt TEXT NOT NULL
-    )
-  ''';
-
 
   static Future<AppDatabase> open() async {
     final dbPath = await getDatabasesPath();
@@ -75,7 +65,6 @@ class AppDatabase {
         await db.execute(_createBreathingExercises);
         await db.execute(_createProtocols);
         await db.execute(_createProtocolSteps);
-        await db.execute(_createPendingBreathingRatings);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute(_createGameSessions);
@@ -84,7 +73,6 @@ class AppDatabase {
         await db.execute('DROP TABLE IF EXISTS protocols');
         await db.execute(_createProtocols);
         await db.execute(_createProtocolSteps);
-        await db.execute(_createPendingBreathingRatings);
       },
       onConfigure: (db) async {
         await db.execute('PRAGMA foreign_keys = ON');

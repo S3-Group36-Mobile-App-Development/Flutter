@@ -24,7 +24,7 @@ class BreathingApiService {
     return exercices;
   }
 
-  Future<BreathingExerciceModel> updateCounts({
+  Future<void> updateCounts({
     required String id,
     required int rating,
     required int optional,
@@ -35,9 +35,9 @@ class BreathingApiService {
 
     final exercice = response.data!;
 
-    final oldUsage = exercice['usageCount'] as int;
-    final oldRatingCount = exercice['ratingCount'] as int;
-    final oldRatingAvg = double.parse(exercice['ratingAvg'].toString());
+    final oldUsage = _toInt(exercice['usageCount']);
+    final oldRatingCount = _toInt(exercice['ratingCount']);
+    final oldRatingAvg = _toDouble(exercice['ratingAvg']);
 
     final newUsage = oldUsage + 1;
     final newRatingCount = oldRatingCount + optional;
@@ -46,17 +46,24 @@ class BreathingApiService {
         ? 0
         : (oldRatingAvg * oldRatingCount + rating) / newRatingCount;
 
-    final data = <String, dynamic>{
-      'usageCount': newUsage,
-      'ratingCount': newRatingCount,
-      'ratingAvg': newAvg.toString(),
-    };
-
-    final updated = await _apiClient.put<Map<String, dynamic>>(
+    await _apiClient.put<dynamic>(
       ApiEndpoints.breathingExercice(id),
-      data: data,
+      data: {
+        'usageCount': newUsage,
+        'ratingCount': newRatingCount,
+        'ratingAvg': newAvg.toString(),
+      },
     );
+  }
 
-    return BreathingExerciceModel.fromJson(updated.data!);
+  int _toInt(dynamic value) {
+    if (value is int) return value;
+    if (value is num) return value.toInt();
+    return int.tryParse(value?.toString() ?? '') ?? 0;
+  }
+
+  double _toDouble(dynamic value) {
+    if (value is num) return value.toDouble();
+    return double.tryParse(value?.toString() ?? '') ?? 0;
   }
 }

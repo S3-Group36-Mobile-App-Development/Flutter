@@ -28,37 +28,4 @@ class BreathingLocalService {
 
     return exercices;
   }
-
-  Future<void> savePendingRating({
-    required String exerciceId,
-    required int rating,
-    required int optional,
-  }) async {
-    final now = DateTime.now();
-
-    await _localdatabase.database.insert('pending_breathing_ratings', {
-      'id': now.microsecondsSinceEpoch.toString(),
-      'exerciceId': exerciceId,
-      'rating': rating,
-      'optional': optional,
-      'createdAt': now.toIso8601String(),
-    });
-  }
-
-  Future<List<Map<String, dynamic>>> getPendingRatings() async {
-    final response = await _localdatabase.database.query(
-      'pending_breathing_ratings',
-      orderBy: 'createdAt ASC',
-    );
-
-    return response.map((item) => Map<String, dynamic>.from(item)).toList();
-  }
-
-  Future<void> deletePendingRating({required String id}) async {
-    await _localdatabase.database.delete(
-      'pending_breathing_ratings',
-      where: 'id = ?',
-      whereArgs: [id],
-    );
-  }
 }
