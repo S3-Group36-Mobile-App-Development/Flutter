@@ -79,6 +79,7 @@ class BreathingViewModel extends ChangeNotifier {
 
   StreamSubscription<double>? _movementSubscription;
   StreamSubscription<bool>? _connectivitySubscription;
+  Timer? _movementResetTimer;
 
   Future<void> initialize() async {
     try {
@@ -165,13 +166,20 @@ class BreathingViewModel extends ChangeNotifier {
   }
 
   void _onMovementDetected(double value) {
-    final next = (value - 9.8).abs() > 0.5
-        ? MovementContext.moving
-        : MovementContext.still;
+    final isMoving = (value - 9.8).abs() > 0.8;
 
-    if (next == _context) return;
-    _context = next;
-    notifyListeners();
+    if (isMoving) {
+      _movementResetTimer?.cancel();
+      _movementResetTimer = Timer(const Duration(seconds: 3), () {
+        _context = MovementContext.still;
+        notifyListeners();
+      });
+
+      if (_context != MovementContext.moving) {
+        _context = MovementContext.moving;
+        notifyListeners();
+      }
+    }
   }
 
   Future<void> startBreathing() async {
@@ -282,6 +290,7 @@ class BreathingViewModel extends ChangeNotifier {
     _phase = 'Listo para comenzar';
     _secondsRemaining = 0;
     _currentCycle = 0;
+    _vibrationService.cancel();
     notifyListeners();
   }
 
@@ -295,6 +304,8 @@ class BreathingViewModel extends ChangeNotifier {
   void dispose() {
     _movementSubscription?.cancel();
     _connectivitySubscription?.cancel();
+    _movementResetTimer?.cancel();
+    _vibrationService.cancel();
     _sensorService.dispose();
     super.dispose();
   }
