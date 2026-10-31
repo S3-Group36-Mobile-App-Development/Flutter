@@ -1,13 +1,17 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/features/cuestionario/cuestionario_config.dart';
+import 'package:zenmind/features/cuestionario/cuestionario_factory.dart';
+import 'package:zenmind/features/cuestionario/data/repositories/cuestionario_repository.dart';
+import 'package:zenmind/features/cuestionario/presentation/views/cuestionario_page.dart';
 
 import 'package:zenmind/home/widgets/home_buttons.dart';
 
 import '../features/authentication/presentation/viewmodels/auth_view_model.dart';
 import '../features/authentication/presentation/views/welcome_page.dart';
-import '../features/daily_review/daily_review_factory.dart';
-import '../features/daily_review/presentation/views/daily_review_page.dart';
 
 class HomePage extends StatefulWidget {
   final AuthViewModel authViewModel;
@@ -19,6 +23,34 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
+  CuestionarioRepository? _cuestionarioRepository;
+
+  @override
+  void initState() {
+    super.initState();
+
+    unawaited(_iniciarSincronizacionCuestionario());
+  }
+
+  @override
+  void dispose() {
+    _cuestionarioRepository?.detenerSincronizacionAutomatica();
+    super.dispose();
+  }
+
+  String get _usuarioCuestionario =>
+      widget.authViewModel.user?.id ?? CuestionarioConfig.usuarioInvitado;
+
+  Future<void> _iniciarSincronizacionCuestionario() async {
+    if (!widget.authViewModel.isAuthenticated) return;
+
+    final repositorio = await obtenerCuestionarioRepository();
+    if (!mounted) return;
+
+    _cuestionarioRepository = repositorio;
+    repositorio.iniciarSincronizacionAutomatica(_usuarioCuestionario);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -60,7 +92,7 @@ class _HomePageState extends State<HomePage> {
                 width: double.infinity,
                 height: 120,
                 child: ElevatedButton(
-                  onPressed: _openDailyReview,
+                  onPressed: _abrirCuestionario,
                   style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(
                       horizontal: 24,
@@ -107,13 +139,18 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
-  void _openDailyReview() {
-    Navigator.push(
+  Future<void> _abrirCuestionario() async {
+    final repositorio = await obtenerCuestionarioRepository();
+    if (!mounted) return;
+
+    await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => DailyReviewPage(
-          repository: buildDailyReviewRepository(),
-          isGuest: widget.authViewModel.isGuest,
+        builder: (context) => CuestionarioPage(
+          repositorio: repositorio,
+          usuarioId: _usuarioCuestionario,
+          autenticado: widget.authViewModel.isAuthenticated,
+          consentimiento: widget.authViewModel.user?.consentimientoDatos ?? false,
         ),
       ),
     );
@@ -129,7 +166,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(authViewModel: widget.authViewModel),
       ),
-      (route) => false,
+          (route) => false,
     );
   }
 }
