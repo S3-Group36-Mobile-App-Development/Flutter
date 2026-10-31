@@ -7,7 +7,6 @@ import 'package:zenmind/core/services/conectivity_service.dart';
 import 'package:zenmind/core/storage/secure_storage_service.dart';
 import 'package:zenmind/features/breathing/data/repositories/breathing_repository.dart';
 import 'package:zenmind/features/breathing/data/services/sensor_service.dart';
-import 'package:zenmind/features/breathing/data/services/vibration_service.dart';
 import 'package:zenmind/features/breathing/domain/entities/breathing_exercice.dart';
 import 'package:zenmind/features/breathing/domain/entities/breathing_pattern.dart';
 import 'package:zenmind/features/breathing/domain/entities/movement_context.dart';
@@ -17,14 +16,12 @@ enum BreathingStatus { idle, running, finished }
 class BreathingViewModel extends ChangeNotifier {
   final BreathingRepository _repository;
   final SensorService _sensorService;
-  final VibrationService _vibrationService;
   final ConnectivityService _connectivityService;
   final SecureStorageService _secureStorage;
 
   BreathingViewModel({
     required this._repository,
     required this._sensorService,
-    required this._vibrationService,
     required this._connectivityService,
     required this._secureStorage,
   });
@@ -221,9 +218,6 @@ class BreathingViewModel extends ChangeNotifier {
 
     _phase = name;
     _secondsRemaining = seconds;
-    if (_selected?.vibra ?? false) {
-      await _vibrationService.vibrate();
-    }
     notifyListeners();
 
     while (_secondsRemaining > 0) {
@@ -290,7 +284,6 @@ class BreathingViewModel extends ChangeNotifier {
     _phase = 'Listo para comenzar';
     _secondsRemaining = 0;
     _currentCycle = 0;
-    _vibrationService.cancel();
     notifyListeners();
   }
 
@@ -305,7 +298,6 @@ class BreathingViewModel extends ChangeNotifier {
     _movementSubscription?.cancel();
     _connectivitySubscription?.cancel();
     _movementResetTimer?.cancel();
-    _vibrationService.cancel();
     _sensorService.dispose();
     super.dispose();
   }
