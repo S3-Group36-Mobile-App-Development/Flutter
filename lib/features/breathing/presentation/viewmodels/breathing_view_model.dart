@@ -92,6 +92,7 @@ class BreathingViewModel extends ChangeNotifier {
             if (wasOffline && connected) {
               _message = 'Conexión recuperada.';
               _hasError = false;
+              _syncPendingRatings();
               loadExercices();
             } else if (!connected) {
               _message =
@@ -109,6 +110,11 @@ class BreathingViewModel extends ChangeNotifier {
         );
 
     _startSensor();
+
+    if (_isOnline) {
+      await _syncPendingRatings();
+    }
+
     await loadExercices();
   }
 
@@ -155,6 +161,12 @@ class BreathingViewModel extends ChangeNotifier {
     }
 
     notifyListeners();
+  }
+
+  Future<void> _syncPendingRatings() async {
+    try {
+      await _repository.syncPendingRatings();
+    } catch (_) {}
   }
 
   void _startSensor() {
@@ -248,8 +260,8 @@ class BreathingViewModel extends ChangeNotifier {
       _hasError = false;
     } on NetworkException {
       _message =
-          'No fue posible enviar tu calificación. '
-          'Revisa tu conexión e inténtalo más tarde.';
+          'No tienes conexión. Guardamos tu calificación y se '
+          'enviará automáticamente cuando vuelva el internet.';
       _hasError = false;
     } catch (_) {
       _message = 'No se pudo registrar tu calificación.';
