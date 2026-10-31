@@ -21,6 +21,4 @@ class ApiEndpoints {
   static const uploadSesion = '/api/v1/juegos/sesiones';
   static const sessions = '/api/v1/juegos/sesiones';
 
-  //Borrar
-  static const checkins = '/api/v1/chequeos2';
 }

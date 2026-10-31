@@ -1,4 +1,4 @@
-import 'package:zenmind/features/Cuestionario/data/models/cuestionario_entry.dart';
+import 'package:zenmind/features/cuestionario/data/models/cuestionario_entry.dart';
 
 class Racha {
   final int actual;
