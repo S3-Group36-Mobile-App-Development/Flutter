@@ -33,6 +33,25 @@ class AppDatabase {
       ratingCount INTEGER NOT NULL
     )
   ''';
+  static const String _createProtocols = '''
+  CREATE TABLE IF NOT EXISTS protocols (
+    id TEXT PRIMARY KEY,
+    usuarioId TEXT,
+    titulo TEXT NOT NULL,
+    esPredefinido INTEGER NOT NULL,
+    syncStatus TEXT NOT NULL DEFAULT 'synced'
+  )
+''';
+
+  static const String _createProtocolSteps = '''
+  CREATE TABLE IF NOT EXISTS protocol_steps (
+    id TEXT PRIMARY KEY,
+    protocoloId TEXT NOT NULL,
+    ordenPaso INTEGER NOT NULL,
+    descripcion TEXT NOT NULL,
+    FOREIGN KEY (protocoloId) REFERENCES protocols (id) ON DELETE CASCADE
+  )
+''';
   static const String _createPendingBreathingRatings = '''
     CREATE TABLE IF NOT EXISTS pending_breathing_ratings (
       id TEXT PRIMARY KEY,
@@ -54,11 +73,17 @@ class AppDatabase {
       onCreate: (db, version) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
+        await db.execute(_createProtocols);
+        await db.execute(_createProtocolSteps);
         await db.execute(_createPendingBreathingRatings);
       },
       onUpgrade: (db, oldVersion, newVersion) async {
         await db.execute(_createGameSessions);
         await db.execute(_createBreathingExercises);
+        await db.execute('DROP TABLE IF EXISTS protocol_steps');
+        await db.execute('DROP TABLE IF EXISTS protocols');
+        await db.execute(_createProtocols);
+        await db.execute(_createProtocolSteps);
         await db.execute(_createPendingBreathingRatings);
       },
       onConfigure: (db) async {

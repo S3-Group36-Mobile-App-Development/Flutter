@@ -1,8 +1,7 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/features/games/data/services/bubble_position_service.dart';
 
 import '../viewmodels/game_view_model.dart';
 import '../widgets/number_bubble.dart';
@@ -27,7 +26,7 @@ class _BubbleGamePageState extends State<BubbleGamePage> {
   static const int _totalBubbles = 20;
   static const double _bubbleSize = 58;
 
-  final Random _random = Random();
+  final BubblePositionService _positionService = BubblePositionService();
 
   static const List<Color> _palette = [
     AppColors.clay,
@@ -58,7 +57,10 @@ class _BubbleGamePageState extends State<BubbleGamePage> {
     widget.viewModel.initialize(isAuthenticated: widget.isAuthenticated);
   }
 
-  void _startGame() {
+  Future<void> _startGame() async {
+    final positions = await _buildNonOverlappingPositions();
+    if (!mounted) return;
+
     setState(() {
       _phase = _GamePhase.playing;
       _nextNumber = 1;
@@ -66,41 +68,21 @@ class _BubbleGamePageState extends State<BubbleGamePage> {
       _correctTaps = 0;
       _hasSaved = false;
       _startTime = DateTime.now();
-      _positions = _buildNonOverlappingPositions();
+      _positions = positions;
     });
     widget.viewModel.clearMessage();
   }
 
-  List<Offset> _buildNonOverlappingPositions() {
-    if (_fieldSize == Size.zero) return _positions;
-
-    final maxX = (_fieldSize.width - _bubbleSize).clamp(0.0, double.infinity);
-    final maxY = (_fieldSize.height - _bubbleSize).clamp(0.0, double.infinity);
-
-    final minDistance = _bubbleSize + 6;
-
-    final List<Offset> result = [];
-
-    for (int i = 0; i < _totalBubbles; i++) {
-      Offset candidate = Offset.zero;
-
-      for (int attempt = 0; attempt < 60; attempt++) {
-        candidate = Offset(
-          _random.nextDouble() * maxX,
-          _random.nextDouble() * maxY,
-        );
-
-        final overlaps = result.any(
-          (other) => (other - candidate).distance < minDistance,
-        );
-
-        if (!overlaps) break;
-      }
-
-      result.add(candidate);
+  Future<List<Offset>> _buildNonOverlappingPositions() {
+    if (_fieldSize == Size.zero) {
+      return Future.value(_positions);
     }
 
-    return result;
+    return _positionService.generatePositions(
+      count: _totalBubbles,
+      bubbleSize: _bubbleSize,
+      fieldSize: _fieldSize,
+    );
   }
 
   Color _colorFor(int number) {
@@ -122,9 +104,18 @@ class _BubbleGamePageState extends State<BubbleGamePage> {
     } else {
       setState(() {
         _errors++;
-        _positions = _buildNonOverlappingPositions();
       });
+      _reshufflePositions();
     }
+  }
+
+  Future<void> _reshufflePositions() async {
+    final positions = await _buildNonOverlappingPositions();
+    if (!mounted) return;
+
+    setState(() {
+      _positions = positions;
+    });
   }
 
   Future<void> _finishGame() async {
