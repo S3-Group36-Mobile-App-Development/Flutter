@@ -5,6 +5,8 @@ import 'package:zenmind/features/breathing/breathing_factory.dart';
 import 'package:zenmind/features/breathing/presentation/views/breathing_page.dart';
 import 'package:zenmind/features/games/game_factory.dart';
 import 'package:zenmind/features/games/presentation/views/bubble_game_page.dart';
+import 'package:zenmind/features/protocols/protocol_factory.dart';
+import 'package:zenmind/features/protocols/presentation/views/protocols_page.dart';
 
 class HomeButtons extends StatelessWidget {
   final bool isAuthenticated;
@@ -31,6 +33,24 @@ class HomeButtons extends StatelessWidget {
           isAuthenticated: isAuthenticated,
         ),
       ),
+    );
+  }
+
+  Future<void> _openProtocols(BuildContext context) async {
+    showDialog<void>(
+      context: context,
+      barrierDismissible: false,
+      builder: (_) =>
+          const Center(child: CircularProgressIndicator(color: AppColors.clay)),
+    );
+
+    final viewModel = await buildProtocolViewModel();
+
+    if (!context.mounted) return;
+    Navigator.of(context).pop();
+
+    Navigator.of(context).push(
+      MaterialPageRoute(builder: (_) => ProtocolsPage(viewModel: viewModel)),
     );
   }
 
@@ -224,7 +244,7 @@ class HomeButtons extends StatelessWidget {
                 const SizedBox(height: 10),
                 SizedBox(
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => _openProtocols(context),
                     style: ElevatedButton.styleFrom(
                       fixedSize: const Size(170, 170),
                       padding: const EdgeInsets.symmetric(
@@ -234,7 +254,7 @@ class HomeButtons extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      backgroundColor: Color(0xFF9D99A6),
+                      backgroundColor: AppColors.leucal,
                     ),
                     child: Column(
                       children: [
