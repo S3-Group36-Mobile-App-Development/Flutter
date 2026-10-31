@@ -254,13 +254,13 @@ class HomeButtons extends StatelessWidget {
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(15),
                       ),
-                      backgroundColor: AppColors.leucal,
+                      backgroundColor: AppColors.clay,
                     ),
                     child: Column(
                       children: [
                         Expanded(
                           child: Image.asset(
-                            'lib/core/assets/images/protocols_button(b&w).png',
+                            'lib/core/assets/images/protocols_button.png',
                             fit: BoxFit.contain,
                           ),
                         ),
