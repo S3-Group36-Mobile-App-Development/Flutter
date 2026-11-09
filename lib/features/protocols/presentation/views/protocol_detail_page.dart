@@ -3,10 +3,18 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
 import 'package:zenmind/features/protocols/domain/entities/protocol.dart';
 
+import '../viewmodels/protocol_view_model.dart';
+import 'create_protocol_page.dart';
+
 class ProtocolDetailPage extends StatelessWidget {
   final Protocol protocol;
+  final ProtocolViewModel viewModel;
 
-  const ProtocolDetailPage({super.key, required this.protocol});
+  const ProtocolDetailPage({
+    super.key,
+    required this.protocol,
+    required this.viewModel,
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -19,6 +27,24 @@ class ProtocolDetailPage extends StatelessWidget {
         backgroundColor: AppColors.ivory,
         foregroundColor: AppColors.coffe,
         title: Text('Volver', style: GoogleFonts.shortStack(fontSize: 18)),
+        actions: [
+          if (!protocol.esPredefinido)
+            IconButton(
+              icon: const Icon(Icons.edit_outlined),
+              onPressed: () {
+                Navigator.of(context)
+                  ..pop()
+                  ..push(
+                    MaterialPageRoute(
+                      builder: (_) => CreateProtocolPage(
+                        viewModel: viewModel,
+                        protocol: protocol,
+                      ),
+                    ),
+                  );
+              },
+            ),
+        ],
       ),
       body: SafeArea(
         child: ListView(
@@ -27,7 +53,10 @@ class ProtocolDetailPage extends StatelessWidget {
             Text(
               protocol.titulo,
               textAlign: TextAlign.center,
-              style: GoogleFonts.shortStack(fontSize: 24, color: AppColors.coffe),
+              style: GoogleFonts.shortStack(
+                fontSize: 24,
+                color: AppColors.coffe,
+              ),
             ),
             const SizedBox(height: 4),
             Text(

@@ -34,7 +34,10 @@ class _ProtocolsPageState extends State<ProtocolsPage> {
 
   Future<void> _openDetail(Protocol protocol) {
     return Navigator.of(context).push(
-      MaterialPageRoute(builder: (_) => ProtocolDetailPage(protocol: protocol)),
+      MaterialPageRoute(
+        builder: (_) =>
+            ProtocolDetailPage(protocol: protocol, viewModel: _viewModel),
+      ),
     );
   }
 

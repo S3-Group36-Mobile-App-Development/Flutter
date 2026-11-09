@@ -1,23 +1,43 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
+import 'package:zenmind/features/protocols/domain/entities/protocol.dart';
 
 import '../viewmodels/protocol_view_model.dart';
 
 class CreateProtocolPage extends StatefulWidget {
   final ProtocolViewModel viewModel;
+  final Protocol? protocol;
 
-  const CreateProtocolPage({super.key, required this.viewModel});
+  const CreateProtocolPage({super.key, required this.viewModel, this.protocol});
 
   @override
   State<CreateProtocolPage> createState() => _CreateProtocolPageState();
 }
 
 class _CreateProtocolPageState extends State<CreateProtocolPage> {
-  final _titleController = TextEditingController();
-  final List<TextEditingController> _stepControllers = [
-    TextEditingController(),
-  ];
+  late final TextEditingController _titleController;
+  late final List<TextEditingController> _stepControllers;
+
+  bool get _isEditing => widget.protocol != null;
+
+  @override
+  void initState() {
+    super.initState();
+
+    final protocol = widget.protocol;
+    _titleController = TextEditingController(text: protocol?.titulo ?? '');
+
+    if (protocol != null && protocol.pasos.isNotEmpty) {
+      final pasos = [...protocol.pasos]
+        ..sort((a, b) => a.ordenPaso.compareTo(b.ordenPaso));
+      _stepControllers = [
+        for (final paso in pasos) TextEditingController(text: paso.descripcion),
+      ];
+    } else {
+      _stepControllers = [TextEditingController()];
+    }
+  }
 
   @override
   void dispose() {
@@ -50,21 +70,30 @@ class _CreateProtocolPageState extends State<CreateProtocolPage> {
         .where((text) => text.isNotEmpty)
         .toList();
 
-    final created = await widget.viewModel.createProtocol(
-      titulo: _titleController.text,
-      pasos: pasos,
-    );
+    final bool ok;
+    if (_isEditing) {
+      ok = await widget.viewModel.editProtocol(
+        original: widget.protocol!,
+        titulo: _titleController.text,
+        pasos: pasos,
+      );
+    } else {
+      ok = await widget.viewModel.createProtocol(
+        titulo: _titleController.text,
+        pasos: pasos,
+      );
+    }
 
     if (!mounted) return;
 
-    if (created) {
+    if (ok) {
       Navigator.of(context).pop();
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           backgroundColor: Colors.red,
           content: Text(
-            widget.viewModel.message ?? 'No se pudo crear el protocolo.',
+            widget.viewModel.message ?? 'No se pudo guardar el protocolo.',
             style: GoogleFonts.livvic(color: Colors.white),
           ),
         ),
@@ -80,7 +109,7 @@ class _CreateProtocolPageState extends State<CreateProtocolPage> {
         backgroundColor: AppColors.ivory,
         foregroundColor: AppColors.coffe,
         title: Text(
-          'Nuevo protocolo',
+          _isEditing ? 'Editar protocolo' : 'Nuevo protocolo',
           style: GoogleFonts.shortStack(fontSize: 18),
         ),
       ),
@@ -257,7 +286,7 @@ class _CreateProtocolPageState extends State<CreateProtocolPage> {
                   ),
                 )
               : Text(
-                  'Crear protocolo',
+                  _isEditing ? 'Guardar cambios' : 'Crear protocolo',
                   style: GoogleFonts.shortStack(fontSize: 18),
                 ),
         ),

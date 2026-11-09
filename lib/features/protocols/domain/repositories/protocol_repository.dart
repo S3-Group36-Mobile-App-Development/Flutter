@@ -12,4 +12,7 @@ abstract class ProtocolRepository {
 
   //4. Actualizar un protocolo, se busca en cache para optimizarlo si no entonces en backend
   Future<void> updateProtocols();
+
+  //5. Editar un protocolo existente del usuario, reutilizando la cache.
+  Future<Protocol> updateProtocol(Protocol protocol);
 }
