@@ -55,6 +55,10 @@ class ProtocolViewModel extends ChangeNotifier {
           notifyListeners();
         }, onError: (_) {});
 
+    if (_isOnline) {
+      _repository.syncPendingProtocols().catchError((_) {});
+    }
+
     await loadProtocols();
   }
 

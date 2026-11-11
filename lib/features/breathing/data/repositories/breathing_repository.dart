@@ -1,4 +1,5 @@
 import 'package:zenmind/core/errors/local_database_exception.dart';
+import 'package:zenmind/core/errors/network_exception.dart';
 import 'package:zenmind/features/breathing/data/models/breathing_exercice_model.dart';
 import 'package:zenmind/features/breathing/data/services/breathing_api_service.dart';
 import 'package:zenmind/features/breathing/data/services/breathing_local_service.dart';
@@ -43,10 +44,48 @@ class BreathingRepository {
     required int rating,
     required int optional,
   }) async {
-    await _breathingApiService.updateCounts(
-      id: id,
-      rating: rating,
-      optional: optional,
-    );
+    try {
+      await _breathingApiService.updateCounts(
+        id: id,
+        rating: rating,
+        optional: optional,
+      );
+    } catch (_) {
+      await _breathinglocalService.savePendingRating(
+        exerciceId: id,
+        rating: rating,
+        optional: optional,
+      );
+
+      throw const NetworkException();
+    }
+  }
+
+  Future<void> syncPendingRatings() async {
+    final List<Map<String, dynamic>> pending;
+
+    try {
+      pending = await _breathinglocalService.getPendingRatings();
+    } catch (_) {
+      throw const LocalDatabaseException(
+        'No se pudieron leer las calificaciones pendientes.',
+      );
+    }
+
+    for (final item in pending) {
+      try {
+        await _breathingApiService.updateCounts(
+          id: item['exerciceId'] as String,
+          rating: item['rating'] as int,
+          optional: item['optional'] as int,
+        );
+
+        await _breathinglocalService.deletePendingRating(
+          id: item['id'] as String,
+        );
+      } catch (_) {
+        throw const NetworkException();
+      }
+    }
   }
 }

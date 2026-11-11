@@ -10,11 +10,9 @@ import 'data/services/sensor_service.dart';
 import 'presentation/viewmodels/breathing_view_model.dart';
 
 Future<BreathingViewModel> buildBreathingViewModel() async {
-  final secureStorage = SecureStorageService();
-
   final apiClient = ApiClient(
     baseUrl: ApiConfig.baseUrl,
-    secureStorage: secureStorage,
+    secureStorage: SecureStorageService(),
   );
 
   final database = await AppDatabase.open();
@@ -28,6 +26,5 @@ Future<BreathingViewModel> buildBreathingViewModel() async {
     repository: repository,
     sensorService: SensorService(),
     connectivityService: ConnectivityService(),
-    secureStorage: secureStorage,
   );
 }
