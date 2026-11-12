@@ -55,6 +55,10 @@ class ProtocolViewModel extends ChangeNotifier {
           notifyListeners();
         }, onError: (_) {});
 
+    if (_isOnline) {
+      _repository.syncPendingProtocols().catchError((_) {});
+    }
+
     await loadProtocols();
   }
 
@@ -112,6 +116,50 @@ class ProtocolViewModel extends ChangeNotifier {
       return true;
     } catch (_) {
       _message = 'No se pudo crear el protocolo.';
+      _hasError = true;
+      return false;
+    } finally {
+      _isSaving = false;
+      notifyListeners();
+    }
+  }
+
+  Future<bool> editProtocol({
+    required Protocol original,
+    required String titulo,
+    required List<String> pasos,
+  }) async {
+    if (_isSaving) return false;
+
+    _isSaving = true;
+    _hasError = false;
+    _message = null;
+    notifyListeners();
+
+    final protocol = Protocol(
+      id: original.id,
+      usuarioId: original.usuarioId,
+      titulo: titulo.trim(),
+      esPredefinido: original.esPredefinido,
+      pasos: [
+        for (var i = 0; i < pasos.length; i++)
+          ProtocolStep(
+            id: '${original.id}_$i',
+            protocoloId: original.id,
+            ordenPaso: i + 1,
+            descripcion: pasos[i].trim(),
+          ),
+      ],
+    );
+
+    try {
+      await _repository.updateProtocol(protocol);
+      _message = 'Protocolo actualizado correctamente.';
+      _hasError = false;
+      await loadProtocols();
+      return true;
+    } catch (_) {
+      _message = 'No se pudo actualizar el protocolo.';
       _hasError = true;
       return false;
     } finally {

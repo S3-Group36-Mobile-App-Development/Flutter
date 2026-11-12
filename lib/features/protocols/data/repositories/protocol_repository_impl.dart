@@ -91,4 +91,16 @@ class ProtocolRepositoryImpl implements ProtocolRepository {
       );
     }
   }
+
+  @override
+  Future<Protocol> updateProtocol(Protocol protocol) async {
+    final updated = await _protocolApiService.putProtocol(
+      protocol: ProtocolModel.fromEntity(protocol),
+    );
+
+    _protocolCacheService.save(updated);
+    await _protocollocalService.saveSession(updated);
+
+    return updated;
+  }
 }
