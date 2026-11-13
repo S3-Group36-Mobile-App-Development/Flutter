@@ -3,6 +3,8 @@ import 'dart:math';
 import 'dart:ui';
 
 class BubblePositionService {
+  static const double _edgePadding = 12;
+
   Future<List<Offset>> generatePositions({
     required int count,
     required double bubbleSize,
@@ -14,8 +16,17 @@ class BubblePositionService {
     return Isolate.run(() {
       final random = Random();
 
-      final maxX = (width - bubbleSize).clamp(0.0, double.infinity);
-      final maxY = (height - bubbleSize).clamp(0.0, double.infinity);
+      final double minX = _edgePadding;
+      final double minY = _edgePadding;
+      final double maxX = (width - bubbleSize - _edgePadding).clamp(
+        minX,
+        double.infinity,
+      );
+      final double maxY = (height - bubbleSize - _edgePadding).clamp(
+        minY,
+        double.infinity,
+      );
+
       final minDistance = bubbleSize + 6;
 
       final List<double> dxs = [];
@@ -26,8 +37,8 @@ class BubblePositionService {
         double candidateY = 0;
 
         for (int attempt = 0; attempt < 60; attempt++) {
-          candidateX = random.nextDouble() * maxX;
-          candidateY = random.nextDouble() * maxY;
+          candidateX = minX + random.nextDouble() * (maxX - minX);
+          candidateY = minY + random.nextDouble() * (maxY - minY);
 
           bool overlaps = false;
           for (int j = 0; j < dxs.length; j++) {
