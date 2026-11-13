@@ -91,7 +91,7 @@ class BreathingViewModel extends ChangeNotifier {
     _connectivitySubscription = _connectivityService.onConnectivityChanged
         .listen(
           _onConnectivityChanged,
-          onError: (_) {
+          onError: (e) {
             _isOnline = false;
             notifyListeners();
           },
