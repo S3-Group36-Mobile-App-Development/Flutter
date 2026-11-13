@@ -13,7 +13,8 @@ enum BreathingStatus { idle, running, finished }
 
 class BreathingViewModel extends ChangeNotifier {
   static const double _gravity = 9.8;
-  static const double _movementThreshold = 0.5;
+  static const double _movementThreshold = 1.5;
+  static const Duration _movementHold = Duration(seconds: 2);
 
   final BreathingRepository _repository;
   final SensorService _sensorService;
@@ -76,6 +77,9 @@ class BreathingViewModel extends ChangeNotifier {
   StreamSubscription<double>? _movementSubscription;
   StreamSubscription<bool>? _connectivitySubscription;
   Timer? _messageTimer;
+
+  DateTime? _lastMovementAt;
+  Timer? _movementResetTimer;
 
   Future<void> initialize() async {
     try {
@@ -180,13 +184,38 @@ class BreathingViewModel extends ChangeNotifier {
   }
 
   void _onMovementDetected(double value) {
-    final next = (value - _gravity).abs() > _movementThreshold
-        ? MovementContext.moving
-        : MovementContext.still;
+    final isMoving = (value - _gravity).abs() > _movementThreshold;
 
-    if (next == _context) return;
-    _context = next;
-    notifyListeners();
+    if (isMoving) {
+      _lastMovementAt = DateTime.now();
+      _movementResetTimer?.cancel();
+      _movementResetTimer = null;
+
+      if (_context != MovementContext.moving) {
+        _context = MovementContext.moving;
+        notifyListeners();
+      }
+      return;
+    }
+
+    if (_context != MovementContext.moving) return;
+    if (_movementResetTimer != null) return;
+
+    final elapsed = _lastMovementAt == null
+        ? _movementHold
+        : DateTime.now().difference(_lastMovementAt!);
+    final remaining = _movementHold - elapsed;
+
+    if (remaining <= Duration.zero) {
+      _context = MovementContext.still;
+      notifyListeners();
+    } else {
+      _movementResetTimer = Timer(remaining, () {
+        _movementResetTimer = null;
+        _context = MovementContext.still;
+        notifyListeners();
+      });
+    }
   }
 
   Future<void> startBreathing() async {
@@ -300,6 +329,7 @@ class BreathingViewModel extends ChangeNotifier {
   @override
   void dispose() {
     _messageTimer?.cancel();
+    _movementResetTimer?.cancel();
     _movementSubscription?.cancel();
     _connectivitySubscription?.cancel();
     _sensorService.dispose();
