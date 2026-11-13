@@ -50,7 +50,7 @@ class BreathingRepository {
         rating: rating,
         optional: optional,
       );
-    } catch (_) {
+    } catch (e) {
       await _breathinglocalService.savePendingRating(
         exerciceId: id,
         rating: rating,

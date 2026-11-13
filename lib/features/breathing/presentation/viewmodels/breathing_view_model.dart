@@ -84,7 +84,7 @@ class BreathingViewModel extends ChangeNotifier {
   Future<void> initialize() async {
     try {
       _isOnline = await _connectivityService.isConnected;
-    } catch (_) {
+    } catch (e) {
       _isOnline = false;
     }
 
@@ -131,14 +131,14 @@ class BreathingViewModel extends ChangeNotifier {
       _exercices = await _repository.getExercices();
       _selected ??= _exercices.isEmpty ? null : _exercices.first;
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudieron cargar los ejercicios de respiración.';
       _hasError = true;
     }
 
     try {
       _favorite = await _repository.getFavorite();
-    } catch (_) {
+    } catch (e) {
       _favorite = null;
     }
 
@@ -158,7 +158,7 @@ class BreathingViewModel extends ChangeNotifier {
       _favorite = _selected;
       _message = 'Guardamos "${_selected!.titulo}" como tu favorito.';
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudo guardar tu favorito.';
       _hasError = true;
     }
@@ -294,7 +294,7 @@ class BreathingViewModel extends ChangeNotifier {
           'No tienes conexión. Guardamos tu calificación y se '
           'enviará automáticamente cuando vuelva el internet.';
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudo registrar tu calificación.';
       _hasError = false;
     } finally {
