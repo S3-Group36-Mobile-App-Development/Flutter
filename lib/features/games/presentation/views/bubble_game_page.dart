@@ -155,7 +155,13 @@ class _BubbleGamePageState extends State<BubbleGamePage> {
       body: SafeArea(
         child: Column(
           children: [
-            if (_phase == _GamePhase.playing) _buildGameTitle(),
+            Visibility(
+              visible: _phase == _GamePhase.playing,
+              maintainSize: true,
+              maintainAnimation: true,
+              maintainState: true,
+              child: _buildGameTitle(),
+            ),
             Expanded(
               child: Stack(
                 children: [

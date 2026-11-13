@@ -330,7 +330,8 @@ class _BreathingPageState extends State<BreathingPage> {
                 ),
               ),
               child: Text(
-                isMoving ? 'No te muevas para empezar' : 'Empezar',
+                isMoving ? 'Deja de moverte' : 'Empezar',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.shortStack(fontSize: 18),
               ),
             ),
@@ -477,17 +478,20 @@ class _BreathingPageState extends State<BreathingPage> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(color: Colors.red),
-        color: Colors.red.withValues(alpha: 0.08),
+        color: AppColors.clay,
       ),
       child: Row(
         children: [
-          const Icon(Icons.vibration, color: Colors.red),
+          const Icon(Icons.vibration, color: Colors.white),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Detectamos movimiento. Busca una posición estable.',
-              style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
+              'DEJA DE MOVERTE, debes estar quieto para empezar.',
+              style: GoogleFonts.livvic(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: Colors.white,
+              ),
             ),
           ),
         ],
