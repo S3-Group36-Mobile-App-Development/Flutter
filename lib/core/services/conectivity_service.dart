@@ -20,6 +20,11 @@ class ConnectivityService {
 
   // Determinar si existe algún tipo de conexión.
   bool _hasConnection(List<ConnectivityResult> results) {
-    return results.any((result) => result != ConnectivityResult.none);
+    for (final result in results) {
+      if (result != ConnectivityResult.none) {
+        return true;
+      }
+    }
+    return false;
   }
 }

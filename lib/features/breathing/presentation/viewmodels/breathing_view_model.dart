@@ -297,13 +297,6 @@ class BreathingViewModel extends ChangeNotifier {
     });
   }
 
-  void clearMessage() {
-    _messageTimer?.cancel();
-    _message = null;
-    _hasError = false;
-    notifyListeners();
-  }
-
   @override
   void dispose() {
     _messageTimer?.cancel();

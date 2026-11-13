@@ -43,12 +43,16 @@ class ProtocolViewModel extends ChangeNotifier {
     }
 
     _connectivitySubscription = _connectivityService.onConnectivityChanged
-        .listen((connected) {
+        .listen((connected) async {
           final wasOffline = !_isOnline;
           _isOnline = connected;
 
           if (wasOffline && connected) {
-            _repository.syncPendingProtocols().catchError((_) {});
+            try {
+              await _repository.syncPendingProtocols();
+            } catch (_) {
+              // Ignorar errores de sincronización en segundo plano
+            }
             loadProtocols();
           }
 
@@ -180,12 +184,6 @@ class ProtocolViewModel extends ChangeNotifier {
       notifyListeners();
       return null;
     }
-  }
-
-  void clearMessage() {
-    _message = null;
-    _hasError = false;
-    notifyListeners();
   }
 
   @override

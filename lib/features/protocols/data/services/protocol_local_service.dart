@@ -104,18 +104,6 @@ class ProtocolLocalService {
     );
   }
 
-  Future<void> updateProtocolSyncStatus({
-    required String protocolId,
-    required String status,
-  }) async {
-    await _localdatabase.database.update(
-      'protocols',
-      {'syncStatus': status},
-      where: 'id = ?',
-      whereArgs: [protocolId],
-    );
-  }
-
   Future<void> deleteProtocol({required String protocolId}) async {
     await _localdatabase.database.delete(
       'protocols',

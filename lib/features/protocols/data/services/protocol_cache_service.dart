@@ -32,35 +32,4 @@ class ProtocolCacheService {
 
     return protocol;
   }
-
-  List<Protocol> getAll() {
-    return List<Protocol>.unmodifiable(_cache.values);
-  }
-
-  void update(Protocol protocol) {
-    if (!_cache.containsKey(protocol.id)) {
-      return;
-    }
-
-    _cache.remove(protocol.id);
-    _cache[protocol.id] = protocol;
-  }
-
-  void remove(String id) {
-    _cache.remove(id);
-  }
-
-  bool contains(String id) {
-    return _cache.containsKey(id);
-  }
-
-  int get length => _cache.length;
-
-  bool get isEmpty => _cache.isEmpty;
-
-  bool get isFull => _cache.length == capacity;
-
-  void clear() {
-    _cache.clear();
-  }
 }
