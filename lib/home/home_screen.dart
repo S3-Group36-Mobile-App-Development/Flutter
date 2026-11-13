@@ -99,6 +99,7 @@ class _HomePageState extends State<HomePage> {
         child: Column(
           children: [
             if (_isOffline) _buildOfflineBanner(),
+            if (_isOffline) const SizedBox(height: 12),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(

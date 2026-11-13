@@ -521,8 +521,7 @@ class _BreathingPageState extends State<BreathingPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'No tienes conexión a internet. '
-              'Algunas funciones pueden no estar disponibles.',
+              'No tienes conexión',
               style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
             ),
           ),
