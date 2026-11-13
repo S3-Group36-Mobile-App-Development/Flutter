@@ -420,12 +420,17 @@ class _BreathingPageState extends State<BreathingPage> {
                       ),
                     ),
                     const SizedBox(height: 6),
-                    Text(
-                      _phaseHints[_viewModel.phase] ?? '',
-                      textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(
-                        fontSize: 14,
-                        color: AppColors.coffe,
+                    SizedBox(
+                      height: 44,
+                      child: Center(
+                        child: Text(
+                          _phaseHints[_viewModel.phase] ?? '',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.livvic(
+                            fontSize: 14,
+                            color: AppColors.coffe,
+                          ),
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -478,11 +483,12 @@ class _BreathingPageState extends State<BreathingPage> {
       padding: const EdgeInsets.all(12),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.coffe),
         color: AppColors.clay,
       ),
       child: Row(
         children: [
-          const Icon(Icons.vibration, color: Colors.white),
+          const Icon(Icons.vibration, color: AppColors.ivory),
           const SizedBox(width: 10),
           Expanded(
             child: Text(
@@ -490,7 +496,7 @@ class _BreathingPageState extends State<BreathingPage> {
               style: GoogleFonts.livvic(
                 fontSize: 13,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppColors.ivory,
               ),
             ),
           ),
@@ -515,7 +521,8 @@ class _BreathingPageState extends State<BreathingPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'No tienes conexión.',
+              'No tienes conexión a internet. '
+              'Algunas funciones pueden no estar disponibles.',
               style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
             ),
           ),

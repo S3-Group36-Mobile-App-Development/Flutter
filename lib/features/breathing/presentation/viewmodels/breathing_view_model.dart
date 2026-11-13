@@ -13,7 +13,7 @@ enum BreathingStatus { idle, running, finished }
 
 class BreathingViewModel extends ChangeNotifier {
   static const double _gravity = 9.8;
-  static const double _movementThreshold = 1.5;
+  static const double _movementThreshold = 2.5;
   static const Duration _movementHold = Duration(seconds: 2);
 
   final BreathingRepository _repository;
@@ -111,14 +111,11 @@ class BreathingViewModel extends ChangeNotifier {
     _isOnline = connected;
 
     if (wasOffline && connected) {
-      _message = 'Conexión recuperada. Sal y vuelve a entrar para cargar todos lor ejercicios.';
+      _message = 'Conexión recuperada. Sal y vuelve a entrar para cargar todos los ejercicios.';
       _hasError = false;
       _scheduleMessageDismiss();
       _syncPendingRatings();
       loadExercices();
-    } else if (!connected) {
-      _message = 'No tienes conexión';
-      _hasError = false;
     }
 
     notifyListeners();
