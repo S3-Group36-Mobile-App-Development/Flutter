@@ -1,4 +1,5 @@
 import 'package:zenmind/core/errors/local_database_exception.dart';
+import 'package:zenmind/core/errors/network_exception.dart';
 import 'package:zenmind/features/protocols/data/models/protocol_model.dart';
 import 'package:zenmind/features/protocols/data/services/protocol_api_service.dart';
 import 'package:zenmind/features/protocols/data/services/protocol_cache_service.dart';
@@ -61,34 +62,7 @@ class ProtocolRepositoryImpl implements ProtocolRepository {
     for (final protocol in pendingProtocols) {
       await _protocolApiService.postProtocol(protocol: protocol);
 
-      await _protocollocalService.updateProtocolSyncStatus(
-        protocolId: protocol.id,
-        status: 'synced',
-      );
-
       await _protocollocalService.deleteProtocol(protocolId: protocol.id);
-    }
-  }
-
-  @override
-  Future<void> updateProtocols() async {
-    final cached = _protocolCacheService.getAll();
-
-    if (cached.isNotEmpty) {
-      for (final protocol in cached) {
-        final updated = await _protocolApiService.putProtocol(
-          protocol: ProtocolModel.fromEntity(protocol),
-        );
-        _protocolCacheService.update(updated);
-      }
-      return;
-    }
-
-    final protocols = await _protocolApiService.getProtocol();
-    for (final protocol in protocols.take(_protocolCacheService.capacity)) {
-      await _protocollocalService.saveSession(
-        ProtocolModel.fromEntity(protocol),
-      );
     }
   }
 
@@ -102,5 +76,32 @@ class ProtocolRepositoryImpl implements ProtocolRepository {
     await _protocollocalService.saveSession(updated);
 
     return updated;
+  }
+
+  @override
+  Future<Protocol> getProtocolForEdit(String protocolId) async {
+    final cached = _protocolCacheService.getById(protocolId);
+    if (cached != null) {
+      return cached;
+    }
+
+    final local = await _protocollocalService.getProtocolById(
+      protocolId: protocolId,
+    );
+    if (local != null) {
+      _protocolCacheService.save(local);
+      return local;
+    }
+
+    try {
+      final remote = await _protocolApiService.getProtocolById(id: protocolId);
+      _protocolCacheService.save(remote);
+      await _protocollocalService.saveSession(remote);
+      return remote;
+    } catch (_) {
+      throw const NetworkException(
+        'No se pudo obtener el protocolo. Revisa tu conexión.',
+      );
+    }
   }
 }

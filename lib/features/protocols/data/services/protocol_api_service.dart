@@ -35,6 +35,14 @@ class ProtocolApiService {
     return protocols;
   }
 
+  Future<ProtocolModel> getProtocolById({required String id}) async {
+    final response = await _apiClient.get<Map<String, dynamic>>(
+      ApiEndpoints.getProtocolo(id),
+    );
+
+    return ProtocolModel.fromJson(response.data!);
+  }
+
   Future<ProtocolModel> putProtocol({required ProtocolModel protocol}) async {
     final response = await _apiClient.put<Map<String, dynamic>>(
       ApiEndpoints.updateProtocolo(protocol.id),

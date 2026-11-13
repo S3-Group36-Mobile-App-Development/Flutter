@@ -188,6 +188,8 @@ class _BreathingPageState extends State<BreathingPage> {
         const SizedBox(height: 12),
         if (!_viewModel.isOnline) _buildOfflineBanner(),
         if (_viewModel.message != null) _buildMessageBanner(),
+        if (_viewModel.context == MovementContext.moving)
+          _buildMovementBanner(),
         Expanded(
           child: exercices.isEmpty
               ? _buildEmptyState()
@@ -306,6 +308,8 @@ class _BreathingPageState extends State<BreathingPage> {
 
   Widget _buildSelectionActions() {
     final hasSelection = _viewModel.selected != null;
+    final isMoving = _viewModel.context == MovementContext.moving;
+    final canStart = hasSelection && !isMoving;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -315,17 +319,19 @@ class _BreathingPageState extends State<BreathingPage> {
             width: double.infinity,
             height: 52,
             child: ElevatedButton(
-              onPressed: hasSelection ? _viewModel.startBreathing : null,
+              onPressed: canStart ? _viewModel.startBreathing : null,
               style: ElevatedButton.styleFrom(
                 backgroundColor: AppColors.clay,
                 foregroundColor: AppColors.coffe,
-                disabledBackgroundColor: AppColors.clay.withValues(alpha: 0.5),
+                disabledBackgroundColor: AppColors.clay.withValues(alpha: 0.3),
+                disabledForegroundColor: AppColors.coffe.withValues(alpha: 0.5),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(12),
                 ),
               ),
               child: Text(
-                'Empezar',
+                isMoving ? 'Deja de moverte' : 'Empezar',
+                textAlign: TextAlign.center,
                 style: GoogleFonts.shortStack(fontSize: 18),
               ),
             ),
@@ -371,78 +377,79 @@ class _BreathingPageState extends State<BreathingPage> {
       child: Column(
         children: [
           Expanded(
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.center,
+            child: Stack(
               children: [
-                Text(
-                  _viewModel.selected?.titulo ?? '',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.shortStack(
-                    fontSize: 20,
-                    color: AppColors.coffe,
-                  ),
-                ),
-                const SizedBox(height: 24),
-                SizedBox(
-                  height: 220,
-                  width: 220,
-                  child: Center(
-                    child: BreathingCircle(
-                      phase: _viewModel.phase,
-                      isBreathing: _viewModel.isBreathing,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-                Text(
-                  _viewModel.phase,
-                  style: GoogleFonts.shortStack(
-                    fontSize: 30,
-                    letterSpacing: 2,
-                    color: AppColors.coffe,
-                  ),
-                ),
-                const SizedBox(height: 4),
-                Text(
-                  '${_viewModel.secondsRemaining} s',
-                  style: GoogleFonts.livvic(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.coffe,
-                  ),
-                ),
-                const SizedBox(height: 6),
-                Text(
-                  _phaseHints[_viewModel.phase] ?? '',
-                  textAlign: TextAlign.center,
-                  style: GoogleFonts.livvic(
-                    fontSize: 14,
-                    color: AppColors.coffe,
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Text(
-                  'Ciclo ${_viewModel.currentCycle} de ${_viewModel.totalCycles}',
-                  style: GoogleFonts.livvic(
-                    fontSize: 16,
-                    color: AppColors.coffe,
-                  ),
-                ),
-                if (!isStill) ...[
-                  const SizedBox(height: 16),
-                  Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(12),
-                      border: Border.all(color: Colors.orange),
-                    ),
-                    child: Text(
-                      'Detectamos movimiento. Busca una posición estable.',
+                Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      _viewModel.selected?.titulo ?? '',
                       textAlign: TextAlign.center,
-                      style: GoogleFonts.livvic(color: AppColors.coffe),
+                      style: GoogleFonts.shortStack(
+                        fontSize: 20,
+                        color: AppColors.coffe,
+                      ),
                     ),
+                    const SizedBox(height: 24),
+                    SizedBox(
+                      height: 220,
+                      width: 220,
+                      child: Center(
+                        child: BreathingCircle(
+                          phase: _viewModel.phase,
+                          isBreathing: _viewModel.isBreathing,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    Text(
+                      _viewModel.phase,
+                      style: GoogleFonts.shortStack(
+                        fontSize: 30,
+                        letterSpacing: 2,
+                        color: AppColors.coffe,
+                      ),
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      '${_viewModel.secondsRemaining} s',
+                      style: GoogleFonts.livvic(
+                        fontSize: 36,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.coffe,
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    SizedBox(
+                      height: 44,
+                      child: Center(
+                        child: Text(
+                          _phaseHints[_viewModel.phase] ?? '',
+                          textAlign: TextAlign.center,
+                          style: GoogleFonts.livvic(
+                            fontSize: 14,
+                            color: AppColors.coffe,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Text(
+                      'Ciclo ${_viewModel.currentCycle} de ${_viewModel.totalCycles}',
+                      style: GoogleFonts.livvic(
+                        fontSize: 16,
+                        color: AppColors.coffe,
+                      ),
+                    ),
+                  ],
+                ),
+                if (!isStill)
+                  Positioned(
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    child: _buildMovementBanner(margin: EdgeInsets.zero),
                   ),
-                ],
               ],
             ),
           ),
@@ -469,6 +476,35 @@ class _BreathingPageState extends State<BreathingPage> {
     );
   }
 
+  Widget _buildMovementBanner({EdgeInsets? margin}) {
+    return Container(
+      width: double.infinity,
+      margin: margin ?? const EdgeInsets.symmetric(horizontal: 24, vertical: 4),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: AppColors.coffe),
+        color: AppColors.clay,
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.vibration, color: AppColors.ivory),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'DEJA DE MOVERTE, debes estar quieto para empezar.',
+              style: GoogleFonts.livvic(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: AppColors.ivory,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildOfflineBanner() {
     return Container(
       width: double.infinity,
@@ -485,7 +521,7 @@ class _BreathingPageState extends State<BreathingPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Sin conexión. Mostramos tu ejercicio favorito guardado.',
+              'No tienes conexión',
               style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
             ),
           ),

@@ -43,12 +43,16 @@ class ProtocolViewModel extends ChangeNotifier {
     }
 
     _connectivitySubscription = _connectivityService.onConnectivityChanged
-        .listen((connected) {
+        .listen((connected) async {
           final wasOffline = !_isOnline;
           _isOnline = connected;
 
           if (wasOffline && connected) {
-            _repository.syncPendingProtocols().catchError((_) {});
+            try {
+              await _repository.syncPendingProtocols();
+            } catch (_) {
+              // Ignorar errores de sincronización en segundo plano
+            }
             loadProtocols();
           }
 
@@ -168,10 +172,18 @@ class ProtocolViewModel extends ChangeNotifier {
     }
   }
 
-  void clearMessage() {
-    _message = null;
+  Future<Protocol?> loadProtocolForEdit(String protocolId) async {
     _hasError = false;
-    notifyListeners();
+    _message = null;
+
+    try {
+      return await _repository.getProtocolForEdit(protocolId);
+    } catch (e) {
+      _message = 'No se pudo abrir el protocolo para editar.';
+      _hasError = true;
+      notifyListeners();
+      return null;
+    }
   }
 
   @override

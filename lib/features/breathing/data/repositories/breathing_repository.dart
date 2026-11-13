@@ -18,12 +18,12 @@ class BreathingRepository {
     try {
       return await _breathingApiService.getExercices();
     } catch (e) {
-      return _breathinglocalService.getExercices();
+      return _breathinglocalService.getSavedExercise();
     }
   }
 
   Future<BreathingExercice?> getFavorite() async {
-    final favorites = await _breathinglocalService.getExercices();
+    final favorites = await _breathinglocalService.getSavedExercise();
     return favorites.isEmpty ? null : favorites.first;
   }
 
@@ -34,7 +34,7 @@ class BreathingRepository {
       );
     } catch (e) {
       throw const LocalDatabaseException(
-        'No se pudo guardar tu ejercicio favorito.',
+        'No se pudo guardar tu ejercicio favorito. Intentalo más tarde.',
       );
     }
   }
@@ -50,7 +50,7 @@ class BreathingRepository {
         rating: rating,
         optional: optional,
       );
-    } catch (_) {
+    } catch (e) {
       await _breathinglocalService.savePendingRating(
         exerciceId: id,
         rating: rating,
@@ -66,7 +66,7 @@ class BreathingRepository {
 
     try {
       pending = await _breathinglocalService.getPendingRatings();
-    } catch (_) {
+    } catch (e) {
       throw const LocalDatabaseException(
         'No se pudieron leer las calificaciones pendientes.',
       );
@@ -83,7 +83,7 @@ class BreathingRepository {
         await _breathinglocalService.deletePendingRating(
           id: item['id'] as String,
         );
-      } catch (_) {
+      } catch (e) {
         throw const NetworkException();
       }
     }

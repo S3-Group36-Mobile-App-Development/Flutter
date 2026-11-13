@@ -12,11 +12,9 @@ import 'package:zenmind/features/breathing/domain/entities/movement_context.dart
 enum BreathingStatus { idle, running, finished }
 
 class BreathingViewModel extends ChangeNotifier {
-  // Umbral de movimiento: la gravedad en reposo es ~9.8 m/s². Si la magnitud
-  // de la aceleración se aleja de ese valor más que la tolerancia, se asume
-  // que el dispositivo se está moviendo.
   static const double _gravity = 9.8;
-  static const double _movementThreshold = 0.5;
+  static const double _movementThreshold = 2.5;
+  static const Duration _movementHold = Duration(seconds: 2);
 
   final BreathingRepository _repository;
   final SensorService _sensorService;
@@ -78,18 +76,22 @@ class BreathingViewModel extends ChangeNotifier {
 
   StreamSubscription<double>? _movementSubscription;
   StreamSubscription<bool>? _connectivitySubscription;
+  Timer? _messageTimer;
+
+  DateTime? _lastMovementAt;
+  Timer? _movementResetTimer;
 
   Future<void> initialize() async {
     try {
       _isOnline = await _connectivityService.isConnected;
-    } catch (_) {
+    } catch (e) {
       _isOnline = false;
     }
 
     _connectivitySubscription = _connectivityService.onConnectivityChanged
         .listen(
           _onConnectivityChanged,
-          onError: (_) {
+          onError: (e) {
             _isOnline = false;
             notifyListeners();
           },
@@ -109,15 +111,11 @@ class BreathingViewModel extends ChangeNotifier {
     _isOnline = connected;
 
     if (wasOffline && connected) {
-      _message = 'Conexión recuperada.';
+      _message = 'Conexión recuperada. Sal y vuelve a entrar para cargar todos los ejercicios.';
       _hasError = false;
+      _scheduleMessageDismiss();
       _syncPendingRatings();
       loadExercices();
-    } else if (!connected) {
-      _message =
-          'No tienes conexión a internet. '
-          'Mostramos tu ejercicio favorito guardado.';
-      _hasError = false;
     }
 
     notifyListeners();
@@ -133,14 +131,14 @@ class BreathingViewModel extends ChangeNotifier {
       _exercices = await _repository.getExercices();
       _selected ??= _exercices.isEmpty ? null : _exercices.first;
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudieron cargar los ejercicios de respiración.';
       _hasError = true;
     }
 
     try {
       _favorite = await _repository.getFavorite();
-    } catch (_) {
+    } catch (e) {
       _favorite = null;
     }
 
@@ -160,7 +158,7 @@ class BreathingViewModel extends ChangeNotifier {
       _favorite = _selected;
       _message = 'Guardamos "${_selected!.titulo}" como tu favorito.';
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudo guardar tu favorito.';
       _hasError = true;
     }
@@ -183,13 +181,38 @@ class BreathingViewModel extends ChangeNotifier {
   }
 
   void _onMovementDetected(double value) {
-    final next = (value - _gravity).abs() > _movementThreshold
-        ? MovementContext.moving
-        : MovementContext.still;
+    final isMoving = (value - _gravity).abs() > _movementThreshold;
 
-    if (next == _context) return;
-    _context = next;
-    notifyListeners();
+    if (isMoving) {
+      _lastMovementAt = DateTime.now();
+      _movementResetTimer?.cancel();
+      _movementResetTimer = null;
+
+      if (_context != MovementContext.moving) {
+        _context = MovementContext.moving;
+        notifyListeners();
+      }
+      return;
+    }
+
+    if (_context != MovementContext.moving) return;
+    if (_movementResetTimer != null) return;
+
+    final elapsed = _lastMovementAt == null
+        ? _movementHold
+        : DateTime.now().difference(_lastMovementAt!);
+    final remaining = _movementHold - elapsed;
+
+    if (remaining <= Duration.zero) {
+      _context = MovementContext.still;
+      notifyListeners();
+    } else {
+      _movementResetTimer = Timer(remaining, () {
+        _movementResetTimer = null;
+        _context = MovementContext.still;
+        notifyListeners();
+      });
+    }
   }
 
   Future<void> startBreathing() async {
@@ -271,7 +294,7 @@ class BreathingViewModel extends ChangeNotifier {
           'No tienes conexión. Guardamos tu calificación y se '
           'enviará automáticamente cuando vuelva el internet.';
       _hasError = false;
-    } catch (_) {
+    } catch (e) {
       _message = 'No se pudo registrar tu calificación.';
       _hasError = false;
     } finally {
@@ -290,14 +313,20 @@ class BreathingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
-  void clearMessage() {
-    _message = null;
-    _hasError = false;
-    notifyListeners();
+  // Oculta el mensaje automaticamente tras 10 segundos.
+  void _scheduleMessageDismiss() {
+    _messageTimer?.cancel();
+    _messageTimer = Timer(const Duration(seconds: 10), () {
+      _message = null;
+      _hasError = false;
+      notifyListeners();
+    });
   }
 
   @override
   void dispose() {
+    _messageTimer?.cancel();
+    _movementResetTimer?.cancel();
     _movementSubscription?.cancel();
     _connectivitySubscription?.cancel();
     _sensorService.dispose();

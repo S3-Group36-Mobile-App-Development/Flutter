@@ -25,5 +25,6 @@ class ApiEndpoints {
   //Endpoints protocols
   static const getAllProtocolos = '/api/v1/protocolos';
   static const createProtocolo = '/api/v1/protocolos';
+  static String getProtocolo(String id) => '/api/v1/protocolos/$id';
   static String updateProtocolo(String id) => '/api/v1/protocolos/$id';
 }
