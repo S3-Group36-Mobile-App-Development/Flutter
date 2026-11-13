@@ -14,7 +14,7 @@ class BreathingLocalService {
     );
   }
 
-  Future<List<BreathingExerciceModel>> getExercices() async {
+  Future<List<BreathingExerciceModel>> getSavedExercise() async {
     final response = await _localdatabase.database.query('breathing_exercises');
 
     final List<BreathingExerciceModel> exercices = [];
@@ -51,7 +51,11 @@ class BreathingLocalService {
       orderBy: 'createdAt ASC',
     );
 
-    return response.map((item) => Map<String, dynamic>.from(item)).toList();
+    final result = <Map<String, dynamic>>[];
+    for (final item in response) {
+      result.add(Map<String, dynamic>.from(item));
+    }
+    return result;
   }
 
   Future<void> deletePendingRating({required String id}) async {

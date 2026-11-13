@@ -168,6 +168,20 @@ class ProtocolViewModel extends ChangeNotifier {
     }
   }
 
+  Future<Protocol?> loadProtocolForEdit(String protocolId) async {
+    _hasError = false;
+    _message = null;
+
+    try {
+      return await _repository.getProtocolForEdit(protocolId);
+    } catch (e) {
+      _message = 'No se pudo abrir el protocolo para editar.';
+      _hasError = true;
+      notifyListeners();
+      return null;
+    }
+  }
+
   void clearMessage() {
     _message = null;
     _hasError = false;

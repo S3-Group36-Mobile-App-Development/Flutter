@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:zenmind/core/services/conectivity_service.dart';
 import 'package:zenmind/core/theme/app_colors.dart';
 import 'package:zenmind/features/cuestionario/cuestionario_config.dart';
 import 'package:zenmind/features/cuestionario/cuestionario_factory.dart';
@@ -25,15 +26,26 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   CuestionarioRepository? _cuestionarioRepository;
 
+  final ConnectivityService _connectivityService = ConnectivityService();
+  StreamSubscription<bool>? _connectivitySubscription;
+  bool _isOffline = false;
+
   @override
   void initState() {
     super.initState();
+
+    _connectivitySubscription = _connectivityService.onConnectivityChanged
+        .listen((connected) {
+          if (!mounted) return;
+          setState(() => _isOffline = !connected);
+        }, onError: (_) {});
 
     unawaited(_iniciarSincronizacionCuestionario());
   }
 
   @override
   void dispose() {
+    _connectivitySubscription?.cancel();
     _cuestionarioRepository?.detenerSincronizacionAutomatica();
     super.dispose();
   }
@@ -86,6 +98,7 @@ class _HomePageState extends State<HomePage> {
       body: SingleChildScrollView(
         child: Column(
           children: [
+            if (_isOffline) _buildOfflineBanner(),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16),
               child: SizedBox(
@@ -139,6 +152,32 @@ class _HomePageState extends State<HomePage> {
     );
   }
 
+  Widget _buildOfflineBanner() {
+    return Container(
+      width: double.infinity,
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 0),
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.orange),
+        color: Colors.orange.withValues(alpha: 0.08),
+      ),
+      child: Row(
+        children: [
+          const Icon(Icons.wifi_off, color: Colors.orange),
+          const SizedBox(width: 10),
+          Expanded(
+            child: Text(
+              'No tienes conexión a internet. '
+              'Algunas funciones pueden no estar disponibles.',
+              style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _abrirCuestionario() async {
     final repositorio = await obtenerCuestionarioRepository();
     if (!mounted) return;
@@ -150,7 +189,8 @@ class _HomePageState extends State<HomePage> {
           repositorio: repositorio,
           usuarioId: _usuarioCuestionario,
           autenticado: widget.authViewModel.isAuthenticated,
-          consentimiento: widget.authViewModel.user?.consentimientoDatos ?? false,
+          consentimiento:
+              widget.authViewModel.user?.consentimientoDatos ?? false,
         ),
       ),
     );
@@ -166,7 +206,7 @@ class _HomePageState extends State<HomePage> {
       MaterialPageRoute(
         builder: (context) => WelcomePage(authViewModel: widget.authViewModel),
       ),
-          (route) => false,
+      (route) => false,
     );
   }
 }

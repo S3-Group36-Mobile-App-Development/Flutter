@@ -46,7 +46,11 @@ class BubblePositionService {
         dys.add(candidateY);
       }
 
-      return List<Offset>.generate(count, (i) => Offset(dxs[i], dys[i]));
+      final List<Offset> positions = [];
+      for (int i = 0; i < count; i++) {
+        positions.add(Offset(dxs[i], dys[i]));
+      }
+      return positions;
     });
   }
 }

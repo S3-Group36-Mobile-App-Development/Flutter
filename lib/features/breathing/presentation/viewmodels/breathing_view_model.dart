@@ -12,9 +12,6 @@ import 'package:zenmind/features/breathing/domain/entities/movement_context.dart
 enum BreathingStatus { idle, running, finished }
 
 class BreathingViewModel extends ChangeNotifier {
-  // Umbral de movimiento: la gravedad en reposo es ~9.8 m/s². Si la magnitud
-  // de la aceleración se aleja de ese valor más que la tolerancia, se asume
-  // que el dispositivo se está moviendo.
   static const double _gravity = 9.8;
   static const double _movementThreshold = 0.5;
 
@@ -78,6 +75,7 @@ class BreathingViewModel extends ChangeNotifier {
 
   StreamSubscription<double>? _movementSubscription;
   StreamSubscription<bool>? _connectivitySubscription;
+  Timer? _messageTimer;
 
   Future<void> initialize() async {
     try {
@@ -109,14 +107,13 @@ class BreathingViewModel extends ChangeNotifier {
     _isOnline = connected;
 
     if (wasOffline && connected) {
-      _message = 'Conexión recuperada.';
+      _message = 'Conexión recuperada. Sal y vuelve a entrar para cargar todos lor ejercicios.';
       _hasError = false;
+      _scheduleMessageDismiss();
       _syncPendingRatings();
       loadExercices();
     } else if (!connected) {
-      _message =
-          'No tienes conexión a internet. '
-          'Mostramos tu ejercicio favorito guardado.';
+      _message = 'No tienes conexión';
       _hasError = false;
     }
 
@@ -290,7 +287,18 @@ class BreathingViewModel extends ChangeNotifier {
     notifyListeners();
   }
 
+  // Oculta el mensaje automaticamente tras 10 segundos.
+  void _scheduleMessageDismiss() {
+    _messageTimer?.cancel();
+    _messageTimer = Timer(const Duration(seconds: 10), () {
+      _message = null;
+      _hasError = false;
+      notifyListeners();
+    });
+  }
+
   void clearMessage() {
+    _messageTimer?.cancel();
     _message = null;
     _hasError = false;
     notifyListeners();
@@ -298,6 +306,7 @@ class BreathingViewModel extends ChangeNotifier {
 
   @override
   void dispose() {
+    _messageTimer?.cancel();
     _movementSubscription?.cancel();
     _connectivitySubscription?.cancel();
     _sensorService.dispose();

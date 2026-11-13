@@ -16,6 +16,34 @@ class ProtocolDetailPage extends StatelessWidget {
     required this.viewModel,
   });
 
+  Future<void> _onEditPressed(BuildContext context) async {
+    final fresh = await viewModel.loadProtocolForEdit(protocol.id);
+
+    if (!context.mounted) return;
+
+    if (fresh == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          backgroundColor: Colors.red,
+          content: Text(
+            viewModel.message ?? 'No se pudo abrir el protocolo para editar.',
+            style: GoogleFonts.livvic(color: Colors.white),
+          ),
+        ),
+      );
+      return;
+    }
+
+    Navigator.of(context)
+      ..pop()
+      ..push(
+        MaterialPageRoute(
+          builder: (_) =>
+              CreateProtocolPage(viewModel: viewModel, protocol: fresh),
+        ),
+      );
+  }
+
   @override
   Widget build(BuildContext context) {
     final pasos = [...protocol.pasos]
@@ -31,18 +59,7 @@ class ProtocolDetailPage extends StatelessWidget {
           if (!protocol.esPredefinido)
             IconButton(
               icon: const Icon(Icons.edit_outlined),
-              onPressed: () {
-                Navigator.of(context)
-                  ..pop()
-                  ..push(
-                    MaterialPageRoute(
-                      builder: (_) => CreateProtocolPage(
-                        viewModel: viewModel,
-                        protocol: protocol,
-                      ),
-                    ),
-                  );
-              },
+              onPressed: () => _onEditPressed(context),
             ),
         ],
       ),

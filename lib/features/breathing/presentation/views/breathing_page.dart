@@ -485,7 +485,7 @@ class _BreathingPageState extends State<BreathingPage> {
           const SizedBox(width: 10),
           Expanded(
             child: Text(
-              'Sin conexión. Mostramos tu ejercicio favorito guardado.',
+              'No tienes conexión.',
               style: GoogleFonts.livvic(fontSize: 13, color: AppColors.coffe),
             ),
           ),

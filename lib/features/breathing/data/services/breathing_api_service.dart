@@ -42,11 +42,11 @@ class BreathingApiService {
     final newUsage = oldUsage + 1;
     final newRatingCount = oldRatingCount + optional;
 
-    final double newAvg = newRatingCount == 0
-        ? 0
+    final double newAvg = optional == 0
+        ? oldRatingAvg
         : (oldRatingAvg * oldRatingCount + rating) / newRatingCount;
 
-    final data = <String, dynamic>{
+    final newData = <String, dynamic>{
       'usageCount': newUsage,
       'ratingCount': newRatingCount,
       'ratingAvg': newAvg.toString(),
@@ -54,7 +54,7 @@ class BreathingApiService {
 
     final updated = await _apiClient.put<Map<String, dynamic>>(
       ApiEndpoints.breathingExercice(id),
-      data: data,
+      data: newData,
     );
 
     return BreathingExerciceModel.fromJson(updated.data!);

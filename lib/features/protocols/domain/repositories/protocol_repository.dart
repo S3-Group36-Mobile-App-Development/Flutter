@@ -10,9 +10,10 @@ abstract class ProtocolRepository {
   // 3. Sincronizar los protocolos pendientes con el backend.
   Future<void> syncPendingProtocols();
 
-  //4. Actualizar un protocolo, se busca en cache para optimizarlo si no entonces en backend
-  Future<void> updateProtocols();
-
-  //5. Editar un protocolo existente del usuario, reutilizando la cache.
+  //4. Editar un protocolo existente del usuario, reutilizando la cache.
   Future<Protocol> updateProtocol(Protocol protocol);
+
+  // 5. Obtener un protocolo para editarlo: busca primero en cache, luego en
+  // local y por ultimo en el backend, para que abrir la edicion sea rapido.
+  Future<Protocol> getProtocolForEdit(String protocolId);
 }

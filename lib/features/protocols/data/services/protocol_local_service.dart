@@ -42,6 +42,21 @@ class ProtocolLocalService {
     return protocols;
   }
 
+  Future<ProtocolModel?> getProtocolById({required String protocolId}) async {
+    final response = await _localdatabase.database.query(
+      'protocols',
+      where: 'id = ?',
+      whereArgs: [protocolId],
+      limit: 1,
+    );
+
+    if (response.isEmpty) {
+      return null;
+    }
+
+    return await _buildProtocol(response.first);
+  }
+
   Future<List<ProtocolModel>> getPendingProtocols() async {
     final response = await _localdatabase.database.query(
       'protocols',
